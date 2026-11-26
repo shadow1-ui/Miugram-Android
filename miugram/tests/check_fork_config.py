@@ -27,4 +27,8 @@ assert "firebaseProject == 'tmessages2'" in standalone
 assert "miugramApplicationId + '.web'" in standalone and 'mobilesdk_app_id' in standalone
 assert "require a private signing keystore" in standalone and "require an independent application ID" in standalone
 assert 'storeFile file("../TMessagesProj/config/release.keystore")' not in standalone.split("        release {", 1)[1].split("        }", 1)[0]
+candidate = read('.github/workflows/miugram-android-candidate.yml')
+assert 'workflow_dispatch:' in candidate and 'MIUGRAM_ANDROID_FIREBASE_CONFIG_B64' in candidate
+assert 'apksigner" verify' in candidate and 'manifest application-id' in candidate
+assert 'upload-artifact@v4' in candidate and 'gh release' not in candidate
 print("Fork API, signing gates, update and profile-link static checks passed (runtime unverified).")
