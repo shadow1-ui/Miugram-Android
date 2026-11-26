@@ -3949,9 +3949,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             args.putLong("user_id", userId);
                             presentFragment(new QrShareActivity(args));
                         });
-                        itemOptions.add(R.drawable.msg_copy, getString(R.string.ProfileCopyUsername), () -> {
-                            AndroidUtilities.addToClipboard("@" + UserObject.getPublicUsername(user));
-                        });
+                        addMiugramProfileLinks(itemOptions, user);
                         itemOptions.add(R.drawable.msg_edit, getString(R.string.ProfileUsernameEdit), () -> {
                             presentFragment(new ChangeUsernameActivity());
                         });
@@ -5019,6 +5017,18 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     return true;
                 } else if (position == noteRow) {
                     editNotes(view, position);
+                    return true;
+                } else if (position == usernameRow && userId != 0) {
+                    final TLRPC.User user = getMessagesController().getUser(userId);
+                    if (user == null) return false;
+                    final ItemOptions options = ItemOptions.makeOptions(ProfileActivity.this, view);
+                    options.setScrimViewBackground(listView.getClipBackground(view));
+                    options.setLongPressSelectionEnabled(false);
+                    addMiugramProfileLinks(options, user);
+                    if (myProfile) {
+                        options.add(R.drawable.msg_edit, getString(R.string.ProfileUsernameEdit), () -> presentFragment(new ChangeUsernameActivity()));
+                    }
+                    options.show();
                     return true;
                 } else {
                     if (editRow(view, position)) return true;
@@ -16378,6 +16388,29 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         });
         o.show();
         return true;
+    }
+
+    // ID links are not public usernames: opening them depends on the recipient's
+    // knowledge of the user and Telegram's access/privacy restrictions.
+    private void addMiugramProfileLinks(ItemOptions options, TLRPC.User user) {
+        final String username = UserObject.getPublicUsername(user);
+        if (!TextUtils.isEmpty(username)) {
+            options.add(R.drawable.msg_copy, getString(R.string.ProfileCopyUsername), () -> {
+                if (AndroidUtilities.addToClipboard("@" + username)) {
+                    BulletinFactory.of(this).createCopyBulletin(getString(R.string.UsernameCopied)).show();
+                }
+            });
+            options.add(R.drawable.msg_link2, getString(R.string.MiugramCopyPublicLink), () -> {
+                if (AndroidUtilities.addToClipboard("https://" + getMessagesController().linkPrefix + "/" + username)) {
+                    BulletinFactory.of(this).createCopyLinkBulletin().show();
+                }
+            });
+        }
+        options.add(R.drawable.msg_link2, getString(R.string.MiugramCopyIdLink), () -> {
+            if (AndroidUtilities.addToClipboard("tg://user?id=" + user.id)) {
+                BulletinFactory.of(this).createCopyBulletin(getString(R.string.MiugramIdLinkCopied)).show();
+            }
+        });
     }
 
     private boolean editRow(View view, int position) {

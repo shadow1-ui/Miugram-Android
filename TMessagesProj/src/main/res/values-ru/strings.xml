@@ -273,4 +273,7 @@
     <string name="MiugramIconEnvelope">Конверт</string>
     <string name="MiugramSettingsInfo">Аккаунт и значки приложения</string>
     <string name="MiugramAppIcons">Значки приложения</string>
+    <string name="MiugramCopyPublicLink">Копировать публичную ссылку</string>
+    <string name="MiugramCopyIdLink">Копировать ссылку по ID (может открыться не у всех)</string>
+    <string name="MiugramIdLinkCopied">Ссылка по ID скопирована. Доступ зависит от настроек приватности и того, известен ли пользователь получателю.</string>
 </resources>

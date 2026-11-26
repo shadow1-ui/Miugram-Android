@@ -11689,4 +11689,7 @@
     <string name="MiugramIconEnvelope">Envelope</string>
     <string name="MiugramSettingsInfo">Account and app icons</string>
     <string name="MiugramAppIcons">App icons</string>
+    <string name="MiugramCopyPublicLink">Copy public profile link</string>
+    <string name="MiugramCopyIdLink">Copy ID link (may not open for everyone)</string>
+    <string name="MiugramIdLinkCopied">ID link copied. Access depends on Telegram privacy and whether the recipient knows this user.</string>
 </resources>
