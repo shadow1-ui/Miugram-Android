@@ -927,7 +927,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 showChoice(getString(R.string.MiugramSettings), new CharSequence[]{
                     getString(R.string.MiugramAccountInfo),
                     getString(R.string.MiugramAppIcons),
-                    getString(R.string.MiugramGhostMode) + ": " + getString(getMessagesController().isMiugramGhostModeEnabled() ? R.string.MiugramOn : R.string.MiugramOff)
+                    getString(R.string.MiugramGhostMode) + ": " + getString(getMessagesController().isMiugramGhostModeEnabled() ? R.string.MiugramOn : R.string.MiugramOff),
+                    getString(R.string.MiugramChecks)
                 }, choice -> {
                     if (choice == 0) {
                         showMiugramAccountInfo();
@@ -935,6 +936,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         presentSettingFragment(new ThemeActivity(ThemeActivity.THEME_TYPE_BASIC));
                     } else if (choice == 2) {
                         showMiugramGhostMode();
+                    } else if (choice == 3) {
+                        showMiugramChecks();
                     }
                 });
                 break;
@@ -1825,6 +1828,20 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     protected RecyclerListView getListViewForSimpleGlass() {
         return listView;
+    }
+
+    private void showMiugramChecks() {
+        if (getParentActivity() == null) return;
+        showChoice(getString(R.string.MiugramChecks), new CharSequence[] {
+            getString(R.string.MiugramChecksClassic), getString(R.string.MiugramChecksRounded)
+        }, choice -> {
+            MessagesController.getGlobalMainSettings().edit().putBoolean("miugram_rounded_checks", choice == 1).apply();
+            AlertDialog.Builder info = new AlertDialog.Builder(getParentActivity(), resourceProvider);
+            info.setTitle(getString(R.string.MiugramChecks));
+            info.setMessage(getString(R.string.MiugramChecksRestart));
+            info.setPositiveButton(getString(R.string.OK), (dialog, which) -> {});
+            showDialog(info.create());
+        });
     }
 
     private void showMiugramGhostMode() {

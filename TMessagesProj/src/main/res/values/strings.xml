@@ -11698,4 +11698,8 @@
     <string name="MiugramEnable">Enable</string>
     <string name="MiugramDisable">Disable</string>
     <string name="MiugramGhostModeDescription">For this account, suppress ordinary cloud chat read requests while enabled. Secret chats, expiring media and stories are not covered. Other sessions and requests already sent or queued can still change read status. This is experimental and not a guarantee of invisibility.</string>
+    <string name="MiugramChecks">Message checkmarks</string>
+    <string name="MiugramChecksClassic">Classic</string>
+    <string name="MiugramChecksRounded">Rounded</string>
+    <string name="MiugramChecksRestart">Restart Miugram to apply the checkmark style. One check means sent; two mean read.</string>
 </resources>

@@ -282,4 +282,8 @@
     <string name="MiugramEnable">Включить</string>
     <string name="MiugramDisable">Выключить</string>
     <string name="MiugramGhostModeDescription">Для этого аккаунта режим подавляет отправку прочтения в обычных облачных чатах. Секретные чаты, самоуничтожающиеся медиа и истории не защищены этим режимом. Другие сеансы и уже отправленные или поставленные в очередь действия могут изменить статус. Режим экспериментальный и не гарантирует невидимость.</string>
+    <string name="MiugramChecks">Галочки сообщений</string>
+    <string name="MiugramChecksClassic">Классические</string>
+    <string name="MiugramChecksRounded">Закруглённые</string>
+    <string name="MiugramChecksRestart">Перезапустите Miugram, чтобы применить стиль. Одна галочка означает отправку, две — прочтение.</string>
 </resources>

@@ -31,3 +31,7 @@ The `Miugram Android debug build` workflow attempts an upstream-derived debug co
 ## Telegram API credentials
 
 Obtain a separate API ID and hash at https://core.telegram.org/api/obtaining_api_id. Set `MIUGRAM_TELEGRAM_API_ID` and `MIUGRAM_TELEGRAM_API_HASH` in the build environment (use protected CI secrets for private builds). Do not commit them. An empty configuration is only suitable for compilation checks and cannot authenticate. Builds and third-party Firebase settings are not yet production-ready.
+
+## Experimental message checkmarks (Android)
+
+Miugram settings offers classic and rounded checkmark styles. The selection is stored locally and applies after restarting the app. The underlying sent/read status logic is unchanged. Resources and translations are checked statically; actual appearance and state transitions have not yet been verified on a device.

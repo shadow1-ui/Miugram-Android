@@ -16,6 +16,7 @@ jobs:
           python3 miugram/tests/check_launcher_resources.py
           python3 miugram/tests/check_fork_config.py
           python3 miugram/tests/check_theme.py
+          python3 miugram/tests/check_message_checks.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
