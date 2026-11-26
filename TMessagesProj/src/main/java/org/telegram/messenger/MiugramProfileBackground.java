@@ -35,10 +35,12 @@ public final class MiugramProfileBackground {
 
     public static Bitmap load(long accountId) {
         if (accountId <= 0) return null;
+        final File image = file(accountId);
+        if (!image.exists() && !new File(image.getPath() + ".bak").exists()) return null;
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
-            AtomicFile atomic = new AtomicFile(file(accountId));
+            AtomicFile atomic = new AtomicFile(image);
             try (java.io.FileInputStream input = atomic.openRead()) {
                 BitmapFactory.decodeStream(input, null, options);
             }

@@ -1842,6 +1842,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         if (getParentActivity() == null) return;
         showChoice(getString(R.string.MiugramProfileBackground), new CharSequence[] {
             getString(R.string.MiugramProfileBackgroundChoose),
+            getString(R.string.MiugramProfileBackgroundPreview),
             getString(R.string.MiugramProfileBackgroundRemove)
         }, choice -> {
             if (choice == 0) {
@@ -1854,6 +1855,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     FileLog.e(e);
                     showMiugramProfileBackgroundResult(false);
                 }
+            } else if (choice == 1) {
+                final long account = getUserConfig().getClientUserId();
+                if (account > 0) presentFragment(ProfileActivity.of(account));
             } else {
                 final long account = getUserConfig().getClientUserId();
                 Utilities.globalQueue.postRunnable(() -> {
