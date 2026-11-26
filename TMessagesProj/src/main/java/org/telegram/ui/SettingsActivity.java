@@ -926,12 +926,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 }
                 showChoice(getString(R.string.MiugramSettings), new CharSequence[]{
                     getString(R.string.MiugramAccountInfo),
-                    getString(R.string.MiugramAppIcons)
+                    getString(R.string.MiugramAppIcons),
+                    getString(R.string.MiugramGhostMode) + ": " + getString(getMessagesController().isMiugramGhostModeEnabled() ? R.string.MiugramOn : R.string.MiugramOff)
                 }, choice -> {
                     if (choice == 0) {
                         showMiugramAccountInfo();
                     } else if (choice == 1) {
                         presentSettingFragment(new ThemeActivity(ThemeActivity.THEME_TYPE_BASIC));
+                    } else if (choice == 2) {
+                        showMiugramGhostMode();
                     }
                 });
                 break;
@@ -1822,6 +1825,20 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     protected RecyclerListView getListViewForSimpleGlass() {
         return listView;
+    }
+
+    private void showMiugramGhostMode() {
+        if (getParentActivity() == null) return;
+        final boolean enabled = getMessagesController().isMiugramGhostModeEnabled();
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), resourceProvider);
+        builder.setTitle(getString(R.string.MiugramGhostMode));
+        builder.setMessage(getString(R.string.MiugramGhostModeDescription));
+        builder.setPositiveButton(getString(enabled ? R.string.MiugramDisable : R.string.MiugramEnable), (dialog, which) -> {
+            getMessagesController().setMiugramGhostModeEnabled(!enabled);
+            listView.adapter.update(true);
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private void showMiugramAccountInfo() {

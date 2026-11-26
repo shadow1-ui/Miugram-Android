@@ -1526,6 +1526,15 @@ public class MessagesController extends BaseController implements NotificationCe
         return mainPreferences;
     }
 
+    // Per-account, opt-in and intentionally limited to ordinary cloud chats.
+    public boolean isMiugramGhostModeEnabled() {
+        return mainPreferences.getBoolean("miugram_ghost_mode", false);
+    }
+
+    public void setMiugramGhostModeEnabled(boolean enabled) {
+        mainPreferences.edit().putBoolean("miugram_ghost_mode", enabled).apply();
+    }
+
     public static SharedPreferences getNotificationsSettings(int account) {
         return getInstance(account).notificationsPreferences;
     }
@@ -14430,6 +14439,14 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markMessageContentAsRead(MessageObject messageObject) {
+        // Never interfere with secret chats or expiring media read/delete flows.
+        final TLRPC.MessageMedia media = MessageObject.getMedia(messageObject.messageOwner);
+        if (MiugramGhostPolicy.suppress(
+                isMiugramGhostModeEnabled(),
+                DialogObject.isEncryptedDialog(messageObject.getDialogId()),
+                messageObject.messageOwner.ttl != 0 || (media != null && media.ttl_seconds != 0))) {
+            return;
+        }
         if (messageObject.scheduled) {
             return;
         }
@@ -14468,6 +14485,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markMentionMessageAsRead(int mid, long channelId, long did) {
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(did), false)) return;
         getMessagesStorage().markMentionMessageAsRead(-channelId, mid, did);
         if (channelId != 0) {
             TLRPC.TL_channels_readMessageContents req = new TLRPC.TL_channels_readMessageContents();
@@ -14593,6 +14611,8 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void completeReadTask(ReadTask task) {
+        // Recheck at send time: a task can have been queued before the toggle.
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(task.dialogId), false)) return;
         if (task.replyId != 0 && task.monoForumPeerId == 0) {
             TLRPC.TL_messages_readDiscussion req = new TLRPC.TL_messages_readDiscussion();
             req.msg_id = (int) task.replyId;
@@ -14695,6 +14715,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markMentionsAsRead(long dialogId, long topicId) {
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(dialogId), false)) return;
         if (DialogObject.isEncryptedDialog(dialogId) || dialogId == getUserConfig().getClientUserId()) {
             return;
         }
@@ -14709,6 +14730,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markDialogAsRead(long dialogId, int maxPositiveId, int maxNegativeId, int maxDate, boolean popup, long threadId, int countDiff, boolean readNow, int scheduledCount) {
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(dialogId), false)) return;
         boolean createReadTask;
 
         if (threadId != 0) {
@@ -21667,6 +21689,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void markReactionsAsRead(long dialogId, long topicId) {
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(dialogId), false)) return;
         if (topicId == 0) {
             TLRPC.Dialog dialog = dialogs_dict.get(dialogId);
             if (dialog != null) {

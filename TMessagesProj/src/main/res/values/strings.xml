@@ -11692,4 +11692,10 @@
     <string name="MiugramCopyPublicLink">Copy public profile link</string>
     <string name="MiugramCopyIdLink">Copy ID link (may not open for everyone)</string>
     <string name="MiugramIdLinkCopied">ID link copied. Access depends on Telegram privacy and whether the recipient knows this user.</string>
+    <string name="MiugramGhostMode">Ghost mode (experimental)</string>
+    <string name="MiugramOn">On</string>
+    <string name="MiugramOff">Off</string>
+    <string name="MiugramEnable">Enable</string>
+    <string name="MiugramDisable">Disable</string>
+    <string name="MiugramGhostModeDescription">For this account, suppress ordinary cloud chat read requests while enabled. Secret chats, expiring media and stories are not covered. Other sessions and requests already sent or queued can still change read status. This is experimental and not a guarantee of invisibility.</string>
 </resources>

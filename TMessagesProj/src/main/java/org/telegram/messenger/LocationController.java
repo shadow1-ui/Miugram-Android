@@ -932,6 +932,7 @@ public class LocationController extends BaseController implements NotificationCe
     }
 
     public void markLiveLoactionsAsRead(long dialogId) {
+        if (getMessagesController().isMiugramGhostModeEnabled()) return;
         if (DialogObject.isEncryptedDialog(dialogId)) {
             return;
         }

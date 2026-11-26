@@ -15,3 +15,12 @@ jobs:
           python3 miugram/tests/check_resources.py
           python3 miugram/tests/check_launcher_resources.py
           python3 miugram/tests/check_fork_config.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Test ghost policy state combinations
+        run: |
+          mkdir -p /tmp/miugram-test
+          javac -d /tmp/miugram-test TMessagesProj/src/main/java/org/telegram/messenger/MiugramGhostPolicy.java miugram/tests/MiugramGhostPolicyTest.java
+          java -cp /tmp/miugram-test MiugramGhostPolicyTest

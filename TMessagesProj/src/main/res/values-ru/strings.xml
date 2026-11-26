@@ -276,4 +276,10 @@
     <string name="MiugramCopyPublicLink">Копировать публичную ссылку</string>
     <string name="MiugramCopyIdLink">Копировать ссылку по ID (может открыться не у всех)</string>
     <string name="MiugramIdLinkCopied">Ссылка по ID скопирована. Доступ зависит от настроек приватности и того, известен ли пользователь получателю.</string>
+    <string name="MiugramGhostMode">Гост-режим (экспериментально)</string>
+    <string name="MiugramOn">Включён</string>
+    <string name="MiugramOff">Выключен</string>
+    <string name="MiugramEnable">Включить</string>
+    <string name="MiugramDisable">Выключить</string>
+    <string name="MiugramGhostModeDescription">Для этого аккаунта режим подавляет отправку прочтения в обычных облачных чатах. Секретные чаты, самоуничтожающиеся медиа и истории не защищены этим режимом. Другие сеансы и уже отправленные или поставленные в очередь действия могут изменить статус. Режим экспериментальный и не гарантирует невидимость.</string>
 </resources>
