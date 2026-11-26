@@ -1,0 +1,14 @@
+name: Miugram resource checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  resources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Miugram translations
+        run: python3 miugram/tests/check_resources.py

@@ -795,6 +795,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
+        items.add(SettingCell.Factory.of(28, 0xFFB98299, 0xFF86576D, R.drawable.settings_account, getString(R.string.MiugramSettings), getString(R.string.MiugramAccountInfo)));
+        items.add(UItem.asShadow(null));
+
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
         items.add(SettingCell.Factory.of(2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_chat, getString(R.string.SettingsChat), getString(R.string.SettingsChatInfo)));
         items.add(SettingCell.Factory.of(3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, getString(R.string.SettingsPrivacySecurity), getString(R.string.SettingsPrivacySecurityInfo)));
@@ -917,6 +920,23 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return;
         }
         switch (item.id) {
+            case 28: {
+                if (getParentActivity() == null) {
+                    break;
+                }
+                final long accountId = getUserConfig().getClientUserId();
+                final int dcId = getConnectionsManager().getCurrentDatacenterId();
+                final String unavailable = getString(R.string.Unavailable);
+                final String id = accountId > 0 ? Long.toString(accountId) : unavailable;
+                // Native code returns INT_MAX when it cannot resolve the current DC.
+                final String dc = dcId > 0 && dcId != Integer.MAX_VALUE ? "DC" + dcId : unavailable;
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), resourceProvider);
+                builder.setTitle(getString(R.string.MiugramSettings));
+                builder.setMessage(getString(R.string.MiugramAccountId) + ": " + id + "\n" + getString(R.string.MiugramAccountDc) + ": " + dc);
+                builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> {});
+                showDialog(builder.create());
+                break;
+            }
             case 1:
                 presentSettingFragment(new UserInfoActivity());
                 break;
