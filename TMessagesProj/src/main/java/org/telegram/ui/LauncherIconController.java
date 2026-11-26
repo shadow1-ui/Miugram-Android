@@ -9,6 +9,7 @@ import org.telegram.messenger.R;
 
 public class LauncherIconController {
     public static void tryFixLauncherIconIfNeeded() {
+        disableLegacyIcons();
         for (LauncherIcon icon : LauncherIcon.values()) {
             if (isEnabled(icon)) {
                 return;
@@ -24,22 +25,32 @@ public class LauncherIconController {
         return i == PackageManager.COMPONENT_ENABLED_STATE_ENABLED || i == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT && icon == LauncherIcon.DEFAULT;
     }
 
+    private static void disableLegacyIcons() {
+        Context ctx = ApplicationLoader.applicationContext;
+        PackageManager pm = ctx.getPackageManager();
+        for (String key : new String[]{"TurboIcon", "NoxIcon"}) {
+            ComponentName name = new ComponentName(ctx.getPackageName(), "org.telegram.messenger." + key);
+            pm.setComponentEnabledSetting(name, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        }
+    }
+
     public static void setIcon(LauncherIcon icon) {
         Context ctx = ApplicationLoader.applicationContext;
         PackageManager pm = ctx.getPackageManager();
+        disableLegacyIcons();
+        pm.setComponentEnabledSetting(icon.getComponentName(ctx), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         for (LauncherIcon i : LauncherIcon.values()) {
-            pm.setComponentEnabledSetting(i.getComponentName(ctx), i == icon ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+            if (i != icon) {
+                pm.setComponentEnabledSetting(i.getComponentName(ctx), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+            }
         }
     }
 
     public enum LauncherIcon {
-        DEFAULT("DefaultIcon", R.drawable.icon_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconDefault),
-        VINTAGE("VintageIcon", R.drawable.icon_6_background_sa, R.mipmap.icon_6_foreground_sa, R.string.AppIconVintage),
-        AQUA("AquaIcon", R.drawable.icon_4_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconAqua),
-        PREMIUM("PremiumIcon", R.drawable.icon_3_background_sa, R.mipmap.icon_3_foreground_sa, R.string.AppIconPremium, true),
-        TURBO("TurboIcon", R.drawable.icon_5_background_sa, R.mipmap.icon_5_foreground_sa, R.string.AppIconTurbo, true),
-        NOX("NoxIcon", R.mipmap.icon_2_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconNox, true);
+        DEFAULT("DefaultIcon", R.drawable.miugram_icon_bg_1, R.drawable.miugram_icon_fg_1, R.string.MiugramIconPlane),
+        VINTAGE("VintageIcon", R.drawable.miugram_icon_bg_2, R.drawable.miugram_icon_fg_2, R.string.MiugramIconSleep),
+        AQUA("AquaIcon", R.drawable.miugram_icon_bg_3, R.drawable.miugram_icon_fg_3, R.string.MiugramIconM),
+        PREMIUM("PremiumIcon", R.drawable.miugram_icon_bg_4, R.drawable.miugram_icon_fg_4, R.string.MiugramIconEnvelope);
 
         public final String key;
         public final int background;

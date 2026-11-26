@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">Telegram</string>
-    <string name="AppNameBeta">Telegram Beta</string>
+    <string name="AppName">Miugram</string>
+    <string name="AppNameBeta">Miugram Beta</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
     <string name="LanguageNameInEnglish">English</string>
@@ -11683,4 +11683,10 @@
     <string name="MiugramAccountInfo">Account information</string>
     <string name="MiugramAccountId">Account ID</string>
     <string name="MiugramAccountDc">Current account DC</string>
+    <string name="MiugramIconPlane">Cat</string>
+    <string name="MiugramIconSleep">Sleep</string>
+    <string name="MiugramIconM">M</string>
+    <string name="MiugramIconEnvelope">Envelope</string>
+    <string name="MiugramSettingsInfo">Account and app icons</string>
+    <string name="MiugramAppIcons">App icons</string>
 </resources>

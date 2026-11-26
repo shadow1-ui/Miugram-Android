@@ -11,4 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate Miugram translations
-        run: python3 miugram/tests/check_resources.py
+        run: |
+          python3 miugram/tests/check_resources.py
+          python3 miugram/tests/check_launcher_resources.py

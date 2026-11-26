@@ -795,7 +795,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        items.add(SettingCell.Factory.of(28, 0xFFB98299, 0xFF86576D, R.drawable.settings_account, getString(R.string.MiugramSettings), getString(R.string.MiugramAccountInfo)));
+        items.add(SettingCell.Factory.of(28, 0xFFB98299, 0xFF86576D, R.drawable.settings_account, getString(R.string.MiugramSettings), getString(R.string.MiugramSettingsInfo)));
         items.add(UItem.asShadow(null));
 
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
@@ -924,17 +924,16 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 if (getParentActivity() == null) {
                     break;
                 }
-                final long accountId = getUserConfig().getClientUserId();
-                final int dcId = getConnectionsManager().getCurrentDatacenterId();
-                final String unavailable = getString(R.string.Unavailable);
-                final String id = accountId > 0 ? Long.toString(accountId) : unavailable;
-                // Native code returns INT_MAX when it cannot resolve the current DC.
-                final String dc = dcId > 0 && dcId != Integer.MAX_VALUE ? "DC" + dcId : unavailable;
-                final AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), resourceProvider);
-                builder.setTitle(getString(R.string.MiugramSettings));
-                builder.setMessage(getString(R.string.MiugramAccountId) + ": " + id + "\n" + getString(R.string.MiugramAccountDc) + ": " + dc);
-                builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> {});
-                showDialog(builder.create());
+                showChoice(getString(R.string.MiugramSettings), new CharSequence[]{
+                    getString(R.string.MiugramAccountInfo),
+                    getString(R.string.MiugramAppIcons)
+                }, choice -> {
+                    if (choice == 0) {
+                        showMiugramAccountInfo();
+                    } else if (choice == 1) {
+                        presentSettingFragment(new ThemeActivity(ThemeActivity.THEME_TYPE_BASIC));
+                    }
+                });
                 break;
             }
             case 1:
@@ -1823,6 +1822,23 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     protected RecyclerListView getListViewForSimpleGlass() {
         return listView;
+    }
+
+    private void showMiugramAccountInfo() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        final long accountId = getUserConfig().getClientUserId();
+        final int dcId = getConnectionsManager().getCurrentDatacenterId();
+        final String unavailable = getString(R.string.Unavailable);
+        final String id = accountId > 0 ? Long.toString(accountId) : unavailable;
+        // Native code returns INT_MAX when it cannot resolve the current DC.
+        final String dc = dcId > 0 && dcId != Integer.MAX_VALUE ? "DC" + dcId : unavailable;
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), resourceProvider);
+        builder.setTitle(getString(R.string.MiugramAccountInfo));
+        builder.setMessage(getString(R.string.MiugramAccountId) + ": " + id + "\n" + getString(R.string.MiugramAccountDc) + ": " + dc);
+        builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> {});
+        showDialog(builder.create());
     }
 
     private interface ChoiceHandler {

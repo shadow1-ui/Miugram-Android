@@ -4,7 +4,9 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
-NAMES = ('MiugramSettings', 'MiugramAccountInfo', 'MiugramAccountId', 'MiugramAccountDc')
+NAMES = ('MiugramSettings', 'MiugramAccountInfo', 'MiugramAccountId', 'MiugramAccountDc',
+         'MiugramSettingsInfo', 'MiugramAppIcons', 'MiugramIconPlane',
+         'MiugramIconSleep', 'MiugramIconM', 'MiugramIconEnvelope')
 for locale in ('values', 'values-ru'):
     path = ROOT / 'TMessagesProj/src/main/res' / locale / 'strings.xml'
     root = ET.parse(path).getroot()

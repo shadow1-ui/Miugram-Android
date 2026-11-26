@@ -33,9 +33,8 @@ public class PremiumAppIconsPreviewView extends FrameLayout implements PagerHead
         this.resourcesProvider = resourcesProvider;
 
         for (LauncherIconController.LauncherIcon icon : LauncherIconController.LauncherIcon.values()) {
-            if (icon.premium) {
-                icons.add(icon);
-            }
+            // Miugram icon variants are available without a Premium account.
+            icons.add(icon);
             if (icons.size() == 3) {
                 break;
             }

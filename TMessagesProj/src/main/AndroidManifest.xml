@@ -115,6 +115,8 @@
             android:enabled="true"
             android:name="org.telegram.messenger.DefaultIcon"
             android:targetActivity="org.telegram.ui.LaunchActivity"
+            android:roundIcon="@mipmap/miugram_launcher_1"
+            android:icon="@mipmap/miugram_launcher_1"
             android:exported="true">
 
             <intent-filter>
@@ -129,8 +131,8 @@
             android:enabled="false"
             android:name="org.telegram.messenger.VintageIcon"
             android:targetActivity="org.telegram.ui.LaunchActivity"
-            android:icon="@mipmap/icon_6_launcher"
-            android:roundIcon="@mipmap/icon_6_launcher_round"
+            android:icon="@mipmap/miugram_launcher_2"
+            android:roundIcon="@mipmap/miugram_launcher_2"
             android:exported="true">
 
             <intent-filter>
@@ -145,8 +147,8 @@
             android:enabled="false"
             android:name="org.telegram.messenger.AquaIcon"
             android:targetActivity="org.telegram.ui.LaunchActivity"
-            android:icon="@mipmap/icon_4_launcher"
-            android:roundIcon="@mipmap/icon_4_launcher_round"
+            android:icon="@mipmap/miugram_launcher_3"
+            android:roundIcon="@mipmap/miugram_launcher_3"
             android:exported="true">
 
             <intent-filter>
@@ -161,8 +163,8 @@
             android:enabled="false"
             android:name="org.telegram.messenger.PremiumIcon"
             android:targetActivity="org.telegram.ui.LaunchActivity"
-            android:icon="@mipmap/icon_3_launcher"
-            android:roundIcon="@mipmap/icon_3_launcher_round"
+            android:icon="@mipmap/miugram_launcher_4"
+            android:roundIcon="@mipmap/miugram_launcher_4"
             android:exported="true">
 
             <intent-filter>
