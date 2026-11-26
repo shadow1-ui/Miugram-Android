@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: android-debug-${{ github.ref }}
+  group: android-debug-latest-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
