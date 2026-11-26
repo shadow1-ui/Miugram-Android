@@ -30626,7 +30626,7 @@ public class ChatActivity extends BaseFragment implements
                         } else {
                             sideControlsButtonsLayout.setButtonCount(ChatActivitySideControlsButtonsLayout.BUTTON_MENTION, newMentionsCount, true);
                         }
-                        getMessagesController().markMentionMessageAsRead(message.getId(), ChatObject.isChannel(currentChat) ? currentChat.id : 0, dialog_id);
+                        getMessagesController().markMentionMessageAsRead(message.getId(), ChatObject.isChannel(currentChat) ? currentChat.id : 0, dialog_id, message);
                         message.setContentIsRead();
                     }
                     if (view instanceof ChatMessageCell) {
@@ -39232,7 +39232,7 @@ public class ChatActivity extends BaseFragment implements
                             } else {
                                 sideControlsButtonsLayout.setButtonCount(ChatActivitySideControlsButtonsLayout.BUTTON_MENTION, newMentionsCount, true);
                             }
-                            getMessagesController().markMentionMessageAsRead(message.getId(), ChatObject.isChannel(currentChat) ? currentChat.id : 0, dialog_id);
+                            getMessagesController().markMentionMessageAsRead(message.getId(), ChatObject.isChannel(currentChat) ? currentChat.id : 0, dialog_id, message);
                             message.setContentIsRead();
                         }
                     }

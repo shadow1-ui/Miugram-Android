@@ -14485,8 +14485,12 @@ public class MessagesController extends BaseController implements NotificationCe
         }
     }
 
-    public void markMentionMessageAsRead(int mid, long channelId, long did) {
-        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(did), false)) return;
+    public void markMentionMessageAsRead(int mid, long channelId, long did, MessageObject message) {
+        // The caller has the message: retain Telegram's expiry handling for timed content.
+        final TLRPC.MessageMedia media = MessageObject.getMedia(message.messageOwner);
+        final boolean expiring = message.messageOwner.ttl != 0 || message.messageOwner.ttl_period != 0
+                || (media != null && media.ttl_seconds != 0);
+        if (MiugramGhostPolicy.suppress(isMiugramGhostModeEnabled(), DialogObject.isEncryptedDialog(did), expiring)) return;
         getMessagesStorage().markMentionMessageAsRead(-channelId, mid, did);
         if (channelId != 0) {
             TLRPC.TL_channels_readMessageContents req = new TLRPC.TL_channels_readMessageContents();
