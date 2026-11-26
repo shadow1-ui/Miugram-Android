@@ -5019,17 +5019,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     editNotes(view, position);
                     return true;
                 } else if (position == usernameRow && userId != 0) {
-                    final TLRPC.User user = getMessagesController().getUser(userId);
-                    if (user == null) return false;
-                    final ItemOptions options = ItemOptions.makeOptions(ProfileActivity.this, view);
-                    options.setScrimViewBackground(listView.getClipBackground(view));
-                    options.setLongPressSelectionEnabled(false);
-                    addMiugramProfileLinks(options, user);
-                    if (myProfile) {
-                        options.add(R.drawable.msg_edit, getString(R.string.ProfileUsernameEdit), () -> presentFragment(new ChangeUsernameActivity()));
-                    }
-                    options.show();
-                    return true;
+                    return showMiugramUsernameMenu(view);
                 } else {
                     if (editRow(view, position)) return true;
                     return processOnClickOrPress(position, view, view.getWidth() / 2f, (int) (view.getHeight() * .75f));
@@ -7445,6 +7435,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     private boolean processOnClickOrPress(final int position, final View view, final float x, final float y) {
+        if (position == usernameRow && userId != 0) {
+            return showMiugramUsernameMenu(view);
+        }
         if (position == usernameRow || position == setUsernameRow) {
             final String username;
             final TLRPC.TL_username usernameObj;
@@ -16387,6 +16380,20 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 .show();
         });
         o.show();
+        return true;
+    }
+
+    private boolean showMiugramUsernameMenu(View view) {
+        final TLRPC.User user = getMessagesController().getUser(userId);
+        if (user == null) return false;
+        final ItemOptions options = ItemOptions.makeOptions(this, view);
+        options.setScrimViewBackground(listView.getClipBackground(view));
+        options.setLongPressSelectionEnabled(false);
+        addMiugramProfileLinks(options, user);
+        if (myProfile) {
+            options.add(R.drawable.msg_edit, getString(R.string.ProfileUsernameEdit), () -> presentFragment(new ChangeUsernameActivity()));
+        }
+        options.show();
         return true;
     }
 
