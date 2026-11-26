@@ -114,6 +114,14 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 }
 
+// The Telegram API credentials must belong to this fork. A credential-free
+// debug build can compile, but it cannot authenticate until configured.
+def miugramApiId = System.getenv('MIUGRAM_TELEGRAM_API_ID') ?: '0'
+def miugramApiHash = System.getenv('MIUGRAM_TELEGRAM_API_HASH') ?: ''
+if (!(miugramApiId ==~ /[0-9]{1,9}/) || !(miugramApiHash ==~ /(?:[a-fA-F0-9]{32})?/)) {
+    throw new GradleException('Invalid Miugram Telegram API credential format')
+}
+
 android {
     compileSdkVersion 36
     buildToolsVersion '36.0.0'
@@ -145,6 +153,8 @@ android {
     }
 
     defaultConfig {
+        buildConfigField "int", "MIUGRAM_API_ID", miugramApiId
+        buildConfigField "String", "MIUGRAM_API_HASH", '"' + miugramApiHash + '"'
         minSdkVersion 23
         targetSdkVersion 36
 

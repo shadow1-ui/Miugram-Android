@@ -10,7 +10,7 @@ Miugram is an unofficial Telegram client based on the official upstream source. 
 
 ## Current status
 
-An initial Miugram settings entry exposes account ID and current DC when available and links to the app icon selector. Four user-supplied logo concepts have adaptive and legacy launcher resources; the cat-and-plane variant is the default. A profile username tap/long-press menu now offers copying a public link and an ID deep link, with an explicit access limitation; the same actions are available in the own-profile username menu. ID links do not bypass Telegram privacy and may not resolve for recipients who do not know the user. This work is unbuilt and untested on a device. No tested Miugram builds or downloadable releases are available. The Telegram package/signing identity, API credentials, and remaining branding still need to be replaced before distribution. Never commit credentials or signing keys. Follow the upstream build instructions and supply your own Telegram API ID and hash.
+An initial Miugram settings entry exposes account ID and current DC when available and links to the app icon selector. Four user-supplied logo concepts have adaptive and legacy launcher resources; the cat-and-plane variant is the default. A profile username tap/long-press menu now offers copying a public link and an ID deep link, with an explicit access limitation; the same actions are available in the own-profile username menu. ID links do not bypass Telegram privacy and may not resolve for recipients who do not know the user. This work is unbuilt and untested on a device. No tested Miugram builds or downloadable releases are available. The official API credentials are no longer used: builds read `MIUGRAM_TELEGRAM_API_ID` and `MIUGRAM_TELEGRAM_API_HASH` from the environment; a build without them cannot sign in. The common upstream update-check entry point and official-app passkeys are disabled. Other update paths still require an audit. The Telegram package/signing identity, Firebase configuration and remaining branding still need to be replaced before distribution. An API hash is embedded in an APK and should not be treated as a secret from recipients. Never commit credentials or signing keys. Follow the upstream build instructions and supply your own Telegram API ID and hash.
 
 ## Planned features
 
@@ -23,3 +23,7 @@ The requested read-receipt suppression mode is not implemented. Telegram's API t
 ## Build verification
 
 The `Miugram Android debug build` workflow attempts an upstream-derived debug compilation. It does not publish its output and is not a release pipeline. A successful compile does not verify login, notifications, calls, user data isolation, or runtime behavior. Own API credentials, app identity, signing, and device testing remain required.
+
+## Telegram API credentials
+
+Obtain a separate API ID and hash at https://core.telegram.org/api/obtaining_api_id. Set `MIUGRAM_TELEGRAM_API_ID` and `MIUGRAM_TELEGRAM_API_HASH` in the build environment (use protected CI secrets for private builds). Do not commit them. An empty configuration is only suitable for compilation checks and cannot authenticate. Builds and third-party Firebase settings are not yet production-ready.
