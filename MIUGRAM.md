@@ -35,3 +35,7 @@ Obtain a separate API ID and hash at https://core.telegram.org/api/obtaining_api
 ## Experimental message checkmarks (Android)
 
 Miugram settings offers classic and rounded checkmark styles. The selection is stored locally and applies after restarting the app. The underlying sent/read status logic is unchanged. Resources and translations are checked statically; actual appearance and state transitions have not yet been verified on a device.
+
+## Experimental local profile background (Android)
+
+Miugram settings can choose an image through the system picker, crop it manually or accept the initial frame, and remove it. The cropped image is stored in the app-private, non-backed-up directory per account, never uploaded by this feature. The own-profile header uses a center crop and dark overlay. The crop screen is a preliminary preview, not yet an in-context profile preview; the automatic framing is geometric center crop, not subject-aware. This code has not been compiled or checked on a device; layout, readability, permissions, cancellation and low-memory behavior still require testing.

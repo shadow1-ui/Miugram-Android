@@ -11702,4 +11702,9 @@
     <string name="MiugramChecksClassic">Classic</string>
     <string name="MiugramChecksRounded">Rounded</string>
     <string name="MiugramChecksRestart">Restart Miugram to apply the checkmark style. One check means sent; two mean read.</string>
+    <string name="MiugramProfileBackground">Profile background</string>
+    <string name="MiugramProfileBackgroundChoose">Choose image</string>
+    <string name="MiugramProfileBackgroundRemove">Remove image</string>
+    <string name="MiugramProfileBackgroundSaved">Profile background updated. Open your profile to see it.</string>
+    <string name="MiugramProfileBackgroundFailed">Could not update the profile background.</string>
 </resources>

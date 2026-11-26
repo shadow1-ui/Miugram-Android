@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.LinearGradient;
@@ -76,6 +77,8 @@ import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MiugramProfileBackground;
+import org.telegram.messenger.Utilities;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
@@ -928,7 +931,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     getString(R.string.MiugramAccountInfo),
                     getString(R.string.MiugramAppIcons),
                     getString(R.string.MiugramGhostMode) + ": " + getString(getMessagesController().isMiugramGhostModeEnabled() ? R.string.MiugramOn : R.string.MiugramOff),
-                    getString(R.string.MiugramChecks)
+                    getString(R.string.MiugramChecks),
+                    getString(R.string.MiugramProfileBackground)
                 }, choice -> {
                     if (choice == 0) {
                         showMiugramAccountInfo();
@@ -938,6 +942,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         showMiugramGhostMode();
                     } else if (choice == 3) {
                         showMiugramChecks();
+                    } else if (choice == 4) {
+                        showMiugramProfileBackground();
                     }
                 });
                 break;
@@ -1828,6 +1834,79 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     protected RecyclerListView getListViewForSimpleGlass() {
         return listView;
+    }
+
+    private static final int MIUGRAM_PICK_PROFILE_BACKGROUND = 31953;
+
+    private void showMiugramProfileBackground() {
+        if (getParentActivity() == null) return;
+        showChoice(getString(R.string.MiugramProfileBackground), new CharSequence[] {
+            getString(R.string.MiugramProfileBackgroundChoose),
+            getString(R.string.MiugramProfileBackgroundRemove)
+        }, choice -> {
+            if (choice == 0) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, MIUGRAM_PICK_PROFILE_BACKGROUND);
+                } catch (Exception e) {
+                    FileLog.e(e);
+                    showMiugramProfileBackgroundResult(false);
+                }
+            } else {
+                final long account = getUserConfig().getClientUserId();
+                Utilities.globalQueue.postRunnable(() -> {
+                    boolean success = MiugramProfileBackground.remove(account);
+                    AndroidUtilities.runOnUIThread(() -> showMiugramProfileBackgroundResult(success));
+                });
+            }
+        });
+    }
+
+    private void showMiugramProfileBackgroundResult(boolean success) {
+        if (getParentActivity() != null) {
+            Toast.makeText(getParentActivity(), getString(success
+                    ? R.string.MiugramProfileBackgroundSaved
+                    : R.string.MiugramProfileBackgroundFailed), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onActivityResultFragment(int requestCode, int resultCode, Intent data) {
+        super.onActivityResultFragment(requestCode, resultCode, data);
+        if (requestCode != MIUGRAM_PICK_PROFILE_BACKGROUND || resultCode != Activity.RESULT_OK
+                || data == null || data.getData() == null) return;
+        Bundle args = new Bundle();
+        args.putParcelable("photoUri", data.getData());
+        args.putBoolean("freeform", true);
+        PhotoCropActivity crop = new PhotoCropActivity(args);
+        final long account = getUserConfig().getClientUserId();
+        crop.setDelegate(bitmap -> {
+            if (bitmap == null || bitmap.isRecycled()) {
+                showMiugramProfileBackgroundResult(false);
+                return;
+            }
+            // PhotoCropActivity owns its source image; copy before it is destroyed.
+            final Bitmap copy;
+            try {
+                copy = bitmap.copy(Bitmap.Config.ARGB_8888, false);
+            } catch (Throwable e) {
+                FileLog.e(e);
+                showMiugramProfileBackgroundResult(false);
+                return;
+            }
+            if (copy == null) {
+                showMiugramProfileBackgroundResult(false);
+                return;
+            }
+            Utilities.globalQueue.postRunnable(() -> {
+                boolean success = MiugramProfileBackground.save(account, copy);
+                copy.recycle();
+                AndroidUtilities.runOnUIThread(() -> showMiugramProfileBackgroundResult(success));
+            });
+        });
+        presentFragment(crop);
     }
 
     private void showMiugramChecks() {

@@ -158,6 +158,7 @@ import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MiugramProfileBackground;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.NotificationsController;
@@ -1231,10 +1232,25 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
         private int currentColor;
         private Paint paint = new Paint();
+        private final Paint miugramImagePaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+        private final Paint miugramScrimPaint = new Paint();
+        private final RectF miugramImageRect = new RectF();
+        private Bitmap miugramBackground;
 
         public TopView(Context context) {
             super(context);
             setWillNotDraw(false);
+            miugramScrimPaint.setColor(0x88000000);
+            final long account = getUserConfig().getClientUserId();
+            if (account > 0 && (myProfile || userId == account)) {
+                Utilities.globalQueue.postRunnable(() -> {
+                    final Bitmap image = MiugramProfileBackground.load(account);
+                    AndroidUtilities.runOnUIThread(() -> {
+                        miugramBackground = image;
+                        invalidate();
+                    });
+                });
+            }
         }
 
         @Override
@@ -1395,6 +1411,22 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (progressToGradient > 0) {
                     backgroundPaint.setAlpha((int) (0xFF * progressToGradient));
                     canvas.drawRect(0, 0, getMeasuredWidth(), y1, backgroundPaint);
+                }
+                if (miugramBackground != null && !miugramBackground.isRecycled()
+                        && miugramBackground.getWidth() > 0 && miugramBackground.getHeight() > 0) {
+                    // Center-crop as a safe automatic starting frame; manual crop is in settings.
+                    final float scale = Math.max((float) getMeasuredWidth() / miugramBackground.getWidth(),
+                            (float) y1 / miugramBackground.getHeight());
+                    final float width = miugramBackground.getWidth() * scale;
+                    final float imageHeight = miugramBackground.getHeight() * scale;
+                    final float left = (getMeasuredWidth() - width) / 2f;
+                    final float top = (y1 - imageHeight) / 2f;
+                    miugramImageRect.set(left, top, left + width, top + imageHeight);
+                    canvas.save();
+                    canvas.clipRect(0, 0, getMeasuredWidth(), y1);
+                    canvas.drawBitmap(miugramBackground, null, miugramImageRect, miugramImagePaint);
+                    canvas.drawRect(0, 0, getMeasuredWidth(), y1, miugramScrimPaint);
+                    canvas.restore();
                 }
                 if (hasEmoji && !capturing) {
                     final float loadedScale = emojiLoadedT.set(isEmojiLoaded());
