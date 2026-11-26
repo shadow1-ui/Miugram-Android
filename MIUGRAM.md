@@ -6,7 +6,7 @@ Miugram is an unofficial Telegram client based on the official upstream source. 
 
 - Upstream: https://github.com/TelegramOrg/Telegram-Android
 - Initial commit: `21f7d109da6ab3506c9e9577f98c6a38771ab335`
-- Project assets in `miugram/assets/logos`: the four supplied concepts and original composite. They are references, not yet production-ready icon resources; cat and paper plane is the intended default.
+- Project assets in `miugram/assets/logos`: the four supplied concepts and original composite. Four launcher icon resources have been generated from these concepts; the cat-and-plane variant is the default. They have not yet been tested on an Android device.
 
 ## Current status
 

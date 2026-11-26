@@ -1,3 +1,9 @@
+# Miugram for Android — work in progress
+
+Miugram is an **unofficial** Telegram client fork, not the official Telegram app. This repository is under development; no tested release is currently available. See [Miugram project status](MIUGRAM.md). The original upstream documentation follows.
+
+---
+
 ## Telegram messenger for Android
 
 [Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.
