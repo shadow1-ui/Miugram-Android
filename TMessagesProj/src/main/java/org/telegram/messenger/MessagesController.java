@@ -14444,7 +14444,8 @@ public class MessagesController extends BaseController implements NotificationCe
         if (MiugramGhostPolicy.suppress(
                 isMiugramGhostModeEnabled(),
                 DialogObject.isEncryptedDialog(messageObject.getDialogId()),
-                messageObject.messageOwner.ttl != 0 || (media != null && media.ttl_seconds != 0))) {
+                messageObject.messageOwner.ttl != 0 || messageObject.messageOwner.ttl_period != 0
+                    || (media != null && media.ttl_seconds != 0))) {
             return;
         }
         if (messageObject.scheduled) {
