@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.telegram.build-app-plugin'
 
+// Debug checks can still use the upstream compile-only identity. Standalone
+// builds require their own app identity, Firebase configuration and key.
+def miugramApplicationId = System.getenv('MIUGRAM_ANDROID_APPLICATION_ID') ?: APP_PACKAGE
+def miugramStorePath = System.getenv('MIUGRAM_ANDROID_KEYSTORE_PATH')
+def miugramStorePassword = System.getenv('MIUGRAM_ANDROID_KEYSTORE_PASSWORD')
+def miugramKeyAlias = System.getenv('MIUGRAM_ANDROID_KEY_ALIAS')
+def miugramKeyPassword = System.getenv('MIUGRAM_ANDROID_KEY_PASSWORD') ?: miugramStorePassword
+
 repositories {
     mavenCentral()
     google()
@@ -27,7 +35,7 @@ android {
     compileSdkVersion 36
     buildToolsVersion '36.0.0'
 
-    defaultConfig.applicationId = APP_PACKAGE
+    defaultConfig.applicationId = miugramApplicationId
 
 
     lintOptions {
@@ -57,10 +65,12 @@ android {
         }
 
         release {
-            storeFile file("../TMessagesProj/config/release.keystore")
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+            if (miugramStorePath) {
+                storeFile file(miugramStorePath)
+            }
+            storePassword miugramStorePassword
+            keyAlias miugramKeyAlias
+            keyPassword miugramKeyPassword
         }
     }
 
@@ -164,3 +174,19 @@ android {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// Refuse to assemble any standalone variant with the public upstream key or
+// application identity. A configured API pair is mandatory for real login.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.project == project && it.name.toLowerCase(Locale.ROOT).contains('standalone') }) {
+        if (!miugramStorePath || !file(miugramStorePath).isFile() || !miugramStorePassword || !miugramKeyAlias || !miugramKeyPassword) {
+            throw new GradleException('Miugram standalone builds require a private signing keystore and credentials')
+        }
+        if (miugramApplicationId == APP_PACKAGE || miugramApplicationId.startsWith('org.telegram.')) {
+            throw new GradleException('Miugram standalone builds require an independent application ID and matching Firebase config')
+        }
+        if (!(System.getenv('MIUGRAM_TELEGRAM_API_ID') ?: '').matches('[1-9][0-9]*') || !(System.getenv('MIUGRAM_TELEGRAM_API_HASH') ?: '').matches('[a-fA-F0-9]{32}')) {
+            throw new GradleException('Miugram standalone builds require a Telegram API ID and hash')
+        }
+    }
+}

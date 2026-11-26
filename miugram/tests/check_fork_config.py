@@ -20,4 +20,8 @@ assert 'if (!BuildVars.CHECK_UPDATES)' in launch
 assert 'return showMiugramUsernameMenu(view);' in profile
 assert '"tg://user?id=" + user.id' in profile
 assert 'getString(R.string.MiugramIdLinkCopied)' in profile
-print("Fork API, update and profile-link static checks passed (runtime unverified).")
+standalone = read("TMessagesProj_AppStandalone/build.gradle")
+assert "MIUGRAM_ANDROID_KEYSTORE_PATH" in standalone and "MIUGRAM_ANDROID_APPLICATION_ID" in standalone
+assert "require a private signing keystore" in standalone and "require an independent application ID" in standalone
+assert 'storeFile file("../TMessagesProj/config/release.keystore")' not in standalone.split("        release {", 1)[1].split("        }", 1)[0]
+print("Fork API, signing gates, update and profile-link static checks passed (runtime unverified).")
