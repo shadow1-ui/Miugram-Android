@@ -14,3 +14,4 @@ jobs:
         run: |
           python3 miugram/tests/check_resources.py
           python3 miugram/tests/check_launcher_resources.py
+          python3 miugram/tests/check_fork_config.py
