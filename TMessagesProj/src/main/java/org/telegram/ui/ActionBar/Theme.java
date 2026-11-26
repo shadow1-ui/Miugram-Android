@@ -1676,7 +1676,7 @@ public class Theme {
             if (isDark != UNKNOWN) {
                 return isDark == DARK;
             }
-            if ("Dark Blue".equals(name) || "Night".equals(name)) {
+            if ("Dark Blue".equals(name) || "Night".equals(name) || "Miugram".equals(name)) {
                 isDark = DARK;
             } else if ("Blue".equals(name) || "Arctic Blue".equals(name) || "Day".equals(name)) {
                 isDark = LIGHT;
@@ -4098,6 +4098,19 @@ public class Theme {
         themes.add(themeInfo);
         themesDict.put("Night", themeInfo);
 
+        // Miugram is a separate built-in theme; the upstream themes remain selectable.
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Miugram";
+        themeInfo.assetName = "miugram.attheme";
+        themeInfo.previewBackgroundColor = 0xff19171b;
+        themeInfo.previewInColor = 0xff302b31;
+        themeInfo.previewOutColor = 0xff563b45;
+        themeInfo.sortIndex = 0;
+        themeInfo.setAccentColorOptions(new int[] { 0xffd6a3af });
+        sortAccents(themeInfo);
+        themes.add(themeInfo);
+        themesDict.put("Miugram", currentNightTheme = themeInfo);
+
         String themesString = themeConfig.getString("themes2", null);
 
         int remoteVersion = themeConfig.getInt("remote_version", 0);
@@ -4363,10 +4376,10 @@ public class Theme {
             throw new RuntimeException(e);
         }
         if (applyingTheme == null) {
-            applyingTheme = defaultTheme;
-        } else {
-            currentDayTheme = applyingTheme;
+            // Only first launch without a saved choice gets the Miugram theme.
+            applyingTheme = themesDict.get("Miugram");
         }
+        currentDayTheme = applyingTheme;
 
         if (preferences.contains("overrideThemeWallpaper") || preferences.contains("selectedBackground2")) {
             boolean override = preferences.getBoolean("overrideThemeWallpaper", false);

@@ -14,7 +14,7 @@ An initial Miugram settings entry exposes account ID and current DC when availab
 
 ## Planned features
 
-A cohesive dark graphite and muted pink design; fast, consistent animations; a dedicated Miugram settings area; account ID and real current DC; user links with privacy limitations; configurable message status indicators; local profile background with cropping; and selectable app icons where supported. Custom interface icon design is deferred pending approval.
+A built-in graphite and muted-pink Android theme is included for first launch, but has not been visually checked in the app; further cohesive design and fast, consistent animations remain; a dedicated Miugram settings area; account ID and real current DC; user links with privacy limitations; configurable message status indicators; local profile background with cropping; and selectable app icons where supported. Custom interface icon design is deferred pending approval.
 
 The requested option to retain locally received messages deleted by others must be clearly marked, safely stored and deletable. It cannot recover messages never received and must not bypass self-destructing or protected content.
 
