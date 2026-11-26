@@ -22,6 +22,9 @@ assert '"tg://user?id=" + user.id' in profile
 assert 'getString(R.string.MiugramIdLinkCopied)' in profile
 standalone = read("TMessagesProj_AppStandalone/build.gradle")
 assert "MIUGRAM_ANDROID_KEYSTORE_PATH" in standalone and "MIUGRAM_ANDROID_APPLICATION_ID" in standalone
+assert "new groovy.json.JsonSlurper().parse(firebaseFile)" in standalone
+assert "firebaseProject == 'tmessages2'" in standalone
+assert "miugramApplicationId + '.web'" in standalone and 'mobilesdk_app_id' in standalone
 assert "require a private signing keystore" in standalone and "require an independent application ID" in standalone
 assert 'storeFile file("../TMessagesProj/config/release.keystore")' not in standalone.split("        release {", 1)[1].split("        }", 1)[0]
 print("Fork API, signing gates, update and profile-link static checks passed (runtime unverified).")

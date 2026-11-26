@@ -185,6 +185,26 @@ gradle.taskGraph.whenReady { graph ->
         if (miugramApplicationId == APP_PACKAGE || miugramApplicationId.startsWith('org.telegram.')) {
             throw new GradleException('Miugram standalone builds require an independent application ID and matching Firebase config')
         }
+        // The web suffix above is part of the installed package, not the base ID.
+        // Reject upstream Firebase even if someone adds a matching client to it.
+        def firebaseFile = file('google-services.json')
+        if (!firebaseFile.isFile()) {
+            throw new GradleException('Miugram standalone builds require an independent Firebase configuration')
+        }
+        def firebase
+        try {
+            firebase = new groovy.json.JsonSlurper().parse(firebaseFile)
+        } catch (Exception ignored) {
+            throw new GradleException('Miugram Firebase configuration is not valid JSON')
+        }
+        def firebaseProject = firebase?.project_info?.project_id
+        def firebaseClients = firebase?.client instanceof List ? firebase.client : []
+        def expectedPackage = miugramApplicationId + '.web'
+        if (!firebaseProject || firebaseProject == 'tmessages2' || !firebaseClients.any {
+            it?.client_info?.android_client_info?.package_name == expectedPackage && it?.client_info?.mobilesdk_app_id
+        }) {
+            throw new GradleException('Miugram requires its own Firebase project with a client for ' + expectedPackage)
+        }
         if (!(System.getenv('MIUGRAM_TELEGRAM_API_ID') ?: '').matches('[1-9][0-9]*') || !(System.getenv('MIUGRAM_TELEGRAM_API_HASH') ?: '').matches('[a-fA-F0-9]{32}')) {
             throw new GradleException('Miugram standalone builds require a Telegram API ID and hash')
         }
