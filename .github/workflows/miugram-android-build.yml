@@ -47,10 +47,13 @@ jobs:
             'ndk;27.2.12479018' 'cmake;3.22.1'
       - name: Compile debug variant
         shell: bash
+        env:
+          MIUGRAM_TELEGRAM_API_ID: ${{ secrets.MIUGRAM_TELEGRAM_API_ID }}
+          MIUGRAM_TELEGRAM_API_HASH: ${{ secrets.MIUGRAM_TELEGRAM_API_HASH }}
         run: |
+          test -n "$MIUGRAM_TELEGRAM_API_ID" && test -n "$MIUGRAM_TELEGRAM_API_HASH"
           chmod +x gradlew
           ./gradlew --no-daemon --max-workers=2 \
             '-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' \
             :TMessagesProj_AppStandalone:assembleAfatDebug --stacktrace
-      # This is intentionally not published: upstream dummy credentials and
-      # signing configuration are not suitable for a Miugram release.
+      # Not published: signing, app identity and runtime behavior are not release-ready.

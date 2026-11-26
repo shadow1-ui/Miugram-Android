@@ -39,3 +39,5 @@ Miugram settings offers classic and rounded checkmark styles. The selection is s
 ## Experimental local profile background (Android)
 
 Miugram settings can choose an image through the system picker, crop it manually or accept the initial frame, and remove it. The cropped image is stored in the app-private, non-backed-up directory per account, never uploaded by this feature. The own-profile header uses a center crop and dark overlay. The settings also offer a profile preview after applying the crop; the automatic framing is geometric center crop, not subject-aware. This code has not been compiled or checked on a device; layout, readability, permissions, cancellation and low-memory behavior still require testing.
+
+The debug CI workflow reads the Telegram API ID and hash from GitHub Actions secrets. It still does not publish a release or prove that login works. The hash is embedded in the resulting application and is extractable from it.
