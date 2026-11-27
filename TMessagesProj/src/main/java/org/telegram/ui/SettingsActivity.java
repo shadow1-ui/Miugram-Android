@@ -1876,6 +1876,72 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
     }
 
+    // An illustrative local preview, not a server-side profile edit. The old image is
+    // untouched until the user confirms. PhotoCropActivity is closing at this point.
+    private void showMiugramBackgroundConfirmation(long account, Bitmap image, int attempt) {
+        if (isFinished || isFinishing() || getParentActivity() == null) {
+            image.recycle();
+            return;
+        }
+        if (isPaused() || parentLayout == null || parentLayout.isTransitionAnimationInProgress()
+                || parentLayout.isSwipeInProgress() || parentLayout.checkTransitionAnimation()) {
+            if (attempt < 12) {
+                AndroidUtilities.runOnUIThread(() -> showMiugramBackgroundConfirmation(account, image, attempt + 1), 200);
+            } else {
+                image.recycle();
+                showMiugramProfileBackgroundResult(false);
+            }
+            return;
+        }
+        Context context = getParentActivity();
+        FrameLayout preview = new FrameLayout(context);
+        ImageView background = new ImageView(context);
+        background.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        background.setImageBitmap(image);
+        preview.addView(background, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+        View shade = new View(context);
+        shade.setBackgroundColor(0x77000000);
+        preview.addView(shade, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+        TLRPC.User user = getUserConfig().getCurrentUser();
+        if (user != null) {
+            AvatarDrawable avatar = new AvatarDrawable();
+            avatar.setInfo(user);
+            BackupImageView avatarImage = new BackupImageView(context);
+            avatarImage.setRoundRadius(AndroidUtilities.dp(28));
+            avatarImage.setForUserOrChat(user, avatar);
+            preview.addView(avatarImage, LayoutHelper.createFrame(56, 56, Gravity.BOTTOM | Gravity.LEFT, 16, 0, 0, 44));
+            TextView name = new TextView(context);
+            name.setText(UserObject.getUserName(user));
+            name.setTextColor(0xffffffff);
+            name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+            name.setSingleLine(true);
+            name.setEllipsize(TextUtils.TruncateAt.END);
+            preview.addView(name, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 32, Gravity.BOTTOM | Gravity.LEFT, 16, 0, 16, 8));
+        }
+        final boolean[] saving = { false };
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, resourceProvider);
+        builder.setTitle(getString(R.string.MiugramProfileBackgroundConfirm));
+        builder.setView(preview, 210);
+        builder.setNegativeButton(getString(R.string.Cancel), (dialog, which) -> {});
+        builder.setPositiveButton(getString(R.string.Save), (dialog, which) -> {
+            saving[0] = true;
+            background.setImageDrawable(null);
+            Utilities.globalQueue.postRunnable(() -> {
+                boolean success = MiugramProfileBackground.save(account, image);
+                image.recycle();
+                AndroidUtilities.runOnUIThread(() -> showMiugramProfileBackgroundResult(success));
+            });
+        });
+        if (showDialog(builder.create(), false, dialog -> {
+            background.setImageDrawable(null);
+            if (!saving[0] && !image.isRecycled()) image.recycle();
+        }) == null) {
+            background.setImageDrawable(null);
+            if (!image.isRecycled()) image.recycle();
+            showMiugramProfileBackgroundResult(false);
+        }
+    }
+
     @Override
     public void onActivityResultFragment(int requestCode, int resultCode, Intent data) {
         super.onActivityResultFragment(requestCode, resultCode, data);
@@ -1905,11 +1971,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 showMiugramProfileBackgroundResult(false);
                 return;
             }
-            Utilities.globalQueue.postRunnable(() -> {
-                boolean success = MiugramProfileBackground.save(account, copy);
-                copy.recycle();
-                AndroidUtilities.runOnUIThread(() -> showMiugramProfileBackgroundResult(success));
-            });
+            AndroidUtilities.runOnUIThread(() -> showMiugramBackgroundConfirmation(account, copy, 0), 200);
         });
         presentFragment(crop);
     }

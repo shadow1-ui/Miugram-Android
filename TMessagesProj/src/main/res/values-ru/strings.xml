@@ -288,6 +288,7 @@
     <string name="MiugramChecksRestart">Перезапустите Miugram, чтобы применить стиль. Одна галочка означает отправку, две — прочтение.</string>
     <string name="MiugramProfileBackground">Фон профиля</string>
     <string name="MiugramProfileBackgroundChoose">Выбрать изображение</string>
+    <string name="MiugramProfileBackgroundConfirm">Предпросмотр фона перед сохранением</string>
     <string name="MiugramProfileBackgroundPreview">Посмотреть в профиле</string>
     <string name="MiugramProfileBackgroundRemove">Удалить изображение</string>
     <string name="MiugramProfileBackgroundSaved">Фон сохранён. Откройте свой профиль, чтобы посмотреть.</string>
