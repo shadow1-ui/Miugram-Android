@@ -74,7 +74,7 @@ public final class MiugramArchiveCandidate {
             evidence.peerProtected = userFull.noforwards_peer_enabled || userFull.noforwards_my_enabled;
             evidence.hasExpiry = dialog.ttl_period != 0 || userFull.ttl_period != 0;
         } else if (dialogId < 0 && chat != null && chatFull != null && chat.id == -dialogId
-                && chatFull.id == -dialogId && chat.migrated_to == null) {
+                && chatFull.id == -dialogId && !chat.min && chat.migrated_to == null) {
             evidence.peerPolicyKnown = true;
             evidence.peerProtected = chat.noforwards;
             evidence.hasExpiry = dialog.ttl_period != 0 || chatFull.ttl_period != 0;

@@ -129,7 +129,9 @@ public final class ArchiveCandidateDeviceTest {
         assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
         chat.noforwards = false; full.ttl_period = 60;
         assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
-        full.ttl_period = 0;
+        full.ttl_period = 0; chat.min = true;
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
+        chat.min = false;
         assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, null, true)));
         assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, false)));
         full.id = 124;
