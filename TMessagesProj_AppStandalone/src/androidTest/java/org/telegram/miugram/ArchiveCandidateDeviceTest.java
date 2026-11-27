@@ -120,4 +120,20 @@ public final class ArchiveCandidateDeviceTest {
         } finally { MiugramTextArchive.clear(account); }
     }
 
+    @Test public void currentDialogPolicyRejectsProtectionChangesAndUnknownPeers() {
+        TLRPC.TL_dialog dialog = new TLRPC.TL_dialog(); dialog.id = -123;
+        TLRPC.TL_chat chat = new TLRPC.TL_chat(); chat.id = 123;
+        TLRPC.TL_chatFull full = new TLRPC.TL_chatFull(); full.id = 123;
+        assertTrue(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
+        chat.noforwards = true;
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
+        chat.noforwards = false; full.ttl_period = 60;
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
+        full.ttl_period = 0;
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, null, true)));
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, false)));
+        full.id = 124;
+        assertFalse(MiugramArchivePolicy.mayDisplay(MiugramArchiveCandidate.currentDialogEvidence(7, -123, dialog, null, chat, full, true)));
+    }
+
 }
