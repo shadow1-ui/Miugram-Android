@@ -6,6 +6,20 @@ package org.telegram.messenger;
 public final class MiugramArchivePolicy {
     private MiugramArchivePolicy() {}
 
+    /** Defaults deny retention until each property has been positively established. */
+    public static final class Evidence {
+        public boolean optedIn, serverDeletion, incoming, ordinaryCloudChat, peerPolicyKnown;
+        public boolean peerProtected = true, messageProtected = true, hasExpiry = true;
+        public boolean ordinaryTextOnly;
+    }
+
+    public static boolean mayRetainText(Evidence evidence) {
+        return evidence != null && mayRetainText(evidence.optedIn, evidence.serverDeletion,
+                evidence.incoming, evidence.ordinaryCloudChat, evidence.peerPolicyKnown,
+                evidence.peerProtected, evidence.messageProtected, evidence.hasExpiry,
+                evidence.ordinaryTextOnly);
+    }
+
     /** Caller must positively establish every safety property, not treat unknown as safe. */
     public static boolean mayRetainText(boolean optedIn, boolean serverDeletion,
             boolean incoming, boolean ordinaryCloudChat, boolean peerPolicyKnown,

@@ -22,7 +22,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 /** Encrypted, per-account local store for eligible text snapshots.
- * Not wired to Telegram updates or the chat UI yet; callers must enforce MiugramArchivePolicy.
+ * Not wired to Telegram updates or the chat UI yet; callers must establish policy evidence.
  * All methods do disk/keystore work and must run off the main thread. */
 public final class MiugramTextArchive {
     private static final int MAX_RECORDS = 2000;
@@ -95,8 +95,9 @@ public final class MiugramTextArchive {
         }
     }
 
-    /** Save a snapshot only after the caller has established all policy preconditions. */
-    public static synchronized void put(long account, Record record) throws Exception {
+    /** Save only after the caller has positively established all policy preconditions. */
+    public static synchronized void put(long account, Record record, MiugramArchivePolicy.Evidence evidence) throws Exception {
+        if (!MiugramArchivePolicy.mayRetainText(evidence)) throw new SecurityException("Ineligible archive snapshot");
         alias(account);
         if (record == null || record.dialogId == 0 || record.messageId <= 0 || record.date <= 0
                 || record.text == null || record.text.isEmpty()

@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.MiugramTextArchive;
+import org.telegram.messenger.MiugramArchivePolicy;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -27,9 +28,18 @@ public final class TextArchiveDeviceTest {
         MiugramTextArchive.clear(account);
         MiugramTextArchive.clear(other);
         try {
-            MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "first secret"));
-            MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "updated secret"));
-            MiugramTextArchive.put(account, new MiugramTextArchive.Record(101, 201, 4, 1700000001, "different chat"));
+            MiugramArchivePolicy.Evidence evidence = new MiugramArchivePolicy.Evidence();
+            MiugramTextArchive.Record first = new MiugramTextArchive.Record(100, 200, 3, 1700000000, "first secret");
+            try {
+                MiugramTextArchive.put(account, first, evidence);
+                fail("Missing evidence must be rejected");
+            } catch (SecurityException expected) { }
+            evidence.optedIn = evidence.serverDeletion = evidence.incoming = true;
+            evidence.ordinaryCloudChat = evidence.peerPolicyKnown = evidence.ordinaryTextOnly = true;
+            evidence.peerProtected = evidence.messageProtected = evidence.hasExpiry = false;
+            MiugramTextArchive.put(account, first, evidence);
+            MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "updated secret"), evidence);
+            MiugramTextArchive.put(account, new MiugramTextArchive.Record(101, 201, 4, 1700000001, "different chat"), evidence);
             ArrayList<MiugramTextArchive.Record> rows = MiugramTextArchive.forDialog(account, 100);
             assertEquals(1, rows.size());
             assertEquals("updated secret", rows.get(0).text);

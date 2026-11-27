@@ -3,6 +3,10 @@ import org.telegram.messenger.MiugramArchivePolicy;
 /** Exhaustive fail-closed test of the policy, not a UI or integration test. */
 public final class MiugramArchivePolicyTest {
     public static void main(String[] args) {
+        if (MiugramArchivePolicy.mayRetainText((MiugramArchivePolicy.Evidence) null)
+                || MiugramArchivePolicy.mayRetainText(new MiugramArchivePolicy.Evidence())) {
+            throw new AssertionError("Missing evidence must deny retention");
+        }
         int permitted = 0;
         for (int bits = 0; bits < (1 << 9); bits++) {
             boolean[] b = new boolean[9];
