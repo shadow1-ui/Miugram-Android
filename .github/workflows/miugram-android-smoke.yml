@@ -54,7 +54,11 @@ jobs:
             -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$RUNNER_TEMP/emulator.log" 2>&1 &
           EMULATOR_PID=$!
           trap 'kill "$EMULATOR_PID" 2>/dev/null || true' EXIT
-          "$ANDROID_HOME/platform-tools/adb" wait-for-device
+          if ! timeout 180s "$ANDROID_HOME/platform-tools/adb" wait-for-device; then
+            echo "Emulator did not connect in time" >&2
+            tail -100 "$RUNNER_TEMP/emulator.log" >&2 || true
+            exit 1
+          fi
           for attempt in $(seq 1 180); do
             if [[ $("$ANDROID_HOME/platform-tools/adb" shell getprop sys.boot_completed | tr -d '\r') == 1 ]]; then break; fi
             if [[ "$attempt" == 180 ]]; then echo 'Emulator boot timed out' >&2; exit 1; fi
