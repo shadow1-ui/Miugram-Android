@@ -48,8 +48,16 @@ jobs:
           set -euo pipefail
           test -e /dev/kvm
           sudo chmod a+rw /dev/kvm
-          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd \
-            --force --name miugram-smoke --package 'system-images;android-35;google_apis;x86_64'
+          # Use one explicit AVD home for both tools, and an existing device profile
+          # so avdmanager cannot silently stop at the interactive hardware prompt.
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/miugram-avd-home"
+          mkdir -p "$ANDROID_AVD_HOME"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd \
+            --force --name miugram-smoke --device pixel_2 \
+            --path "$ANDROID_AVD_HOME/miugram-smoke.avd" \
+            --package 'system-images;android-35;google_apis;x86_64' < /dev/null
+          test -f "$ANDROID_AVD_HOME/miugram-smoke.ini"
+          "$ANDROID_HOME/emulator/emulator" -list-avds | grep -Fx miugram-smoke
           "$ANDROID_HOME/emulator/emulator" -avd miugram-smoke -no-window -no-audio \
             -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$RUNNER_TEMP/emulator.log" 2>&1 &
           EMULATOR_PID=$!
