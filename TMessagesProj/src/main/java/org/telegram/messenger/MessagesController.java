@@ -1544,6 +1544,23 @@ public class MessagesController extends BaseController implements NotificationCe
         return miugramArchiveGeneration.get();
     }
 
+    /** Invalidate queued captures before removing a newly restricted dialog. */
+    private void miugramPurgeRestrictedDialog(long dialogId) {
+        if (dialogId == 0 || !isMiugramArchiveCaptureEnabled()) return;
+        final long accountId = getUserConfig().getClientUserId();
+        if (accountId <= 0) return;
+        miugramArchiveGeneration.incrementAndGet();
+        // The same serial queue handles archive writes, so a write already in progress
+        // finishes before this removal and later pending captures see the new generation.
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                MiugramTextArchive.removeDialog(accountId, dialogId);
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        });
+    }
+
     public static SharedPreferences getNotificationsSettings(int account) {
         return getInstance(account).notificationsPreferences;
     }
@@ -6986,6 +7003,7 @@ public class MessagesController extends BaseController implements NotificationCe
             return;
         }
         TLRPC.Chat oldChat = chats.get(chat.id);
+        if (!fromCache && !chat.min && chat.noforwards) miugramPurgeRestrictedDialog(-chat.id);
         if (oldChat == chat) {
             return;
         }
@@ -7710,6 +7728,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         res.full_chat.inviterId = old.inviterId;
                     }
                     fullChats.put(chatId, res.full_chat);
+                    if (res.full_chat.ttl_period != 0) miugramPurgeRestrictedDialog(-chatId);
                     getTranslateController().updateDialogFull(-chatId);
 
                     applyDialogNotificationsSettings(-chatId, 0, res.full_chat.notify_settings);
@@ -7824,6 +7843,9 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                     }
                     fullUsers.put(user.id, userFull);
+                    if (userFull.ttl_period != 0 || userFull.noforwards_peer_enabled || userFull.noforwards_my_enabled) {
+                        miugramPurgeRestrictedDialog(user.id);
+                    }
                     final boolean contactBlockedChanged = syncUserContactBlocked(user.id, userFull);
                     getTranslateController().updateDialogFull(user.id);
                     StarsController.getInstance(currentAccount).invalidateProfileGifts(userFull);
@@ -20797,6 +20819,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     } else if (baseUpdate instanceof TL_update.TL_updatePeerHistoryTTL) {
                         TL_update.TL_updatePeerHistoryTTL updatePeerHistoryTTL = (TL_update.TL_updatePeerHistoryTTL) baseUpdate;
                         long peerId = MessageObject.getPeerId(updatePeerHistoryTTL.peer);
+                        if (updatePeerHistoryTTL.ttl_period != 0) miugramPurgeRestrictedDialog(peerId);
                         TLRPC.ChatFull chatFull = null;
                         TLRPC.UserFull userFull = null;
 
@@ -20935,6 +20958,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.UserFull userFull = getUserFull(peerId);
                     if (userFull != null && message.action instanceof TLRPC.TL_messageActionNoForwardsToggle) {
                         TLRPC.TL_messageActionNoForwardsToggle action = (TLRPC.TL_messageActionNoForwardsToggle) message.action;
+                        if (action.new_value) miugramPurgeRestrictedDialog(peerId);
                         if (!action.new_value) {
                             userFull.noforwards_peer_enabled = false;
                             userFull.noforwards_my_enabled = false;
