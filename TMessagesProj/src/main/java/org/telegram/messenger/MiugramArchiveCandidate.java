@@ -2,9 +2,11 @@
 package org.telegram.messenger;
 
 import org.telegram.tgnet.TLRPC;
+import java.nio.charset.StandardCharsets;
 
 /** Conservative extraction from already-cached Telegram messages.
- * This helper is not connected to updates, persistence, or the chat UI yet.
+ * Experimental update capture uses this helper behind a disabled internal gate;
+ * chat UI and policy-change cleanup remain unconnected.
  * Call only on the UI thread, where MessagesController's peer caches are accessed. */
 public final class MiugramArchiveCandidate {
     private MiugramArchiveCandidate() {}
@@ -69,7 +71,8 @@ public final class MiugramArchiveCandidate {
                 && !message.from_scheduled && message.fwd_from == null && message.from_id != null
                 && (message.media == null || message.media instanceof TLRPC.TL_messageMediaEmpty)
                 && (message.entities == null || message.entities.isEmpty())
-                && message.message != null && !message.message.isEmpty();
+                && message.message != null && !message.message.isEmpty()
+                && message.message.getBytes(StandardCharsets.UTF_8).length <= 16 * 1024;
         if (!MiugramArchivePolicy.mayRetainText(evidence) || message.id <= 0 || message.date <= 0) return null;
         long sender = MessageObject.getPeerId(message.from_id);
         if (sender == 0) return null;

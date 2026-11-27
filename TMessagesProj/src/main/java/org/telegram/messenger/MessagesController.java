@@ -1535,6 +1535,11 @@ public class MessagesController extends BaseController implements NotificationCe
         mainPreferences.edit().putBoolean("miugram_ghost_mode", enabled).apply();
     }
 
+    // Disabled until preservation can be displayed and cleared safely in the UI.
+    boolean isMiugramArchiveCaptureEnabled() {
+        return mainPreferences.getBoolean("miugram_archive_capture_experimental", false);
+    }
+
     public static SharedPreferences getNotificationsSettings(int account) {
         return getInstance(account).notificationsPreferences;
     }
@@ -21356,6 +21361,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 long key = deletedMessages.keyAt(a);
                 ArrayList<Integer> arrayList = deletedMessages.valueAt(a);
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                    // This path represents server deletion updates, not a local delete command.
+                    // Capture is disabled by default and has no user-facing switch until chat
+                    // rendering, policy-change handling and explicit cleanup are connected.
+                    if (isMiugramArchiveCaptureEnabled()) {
+                        getMessagesStorage().captureMiugramServerDeletions(key, arrayList);
+                    }
                     ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(key, arrayList, false, true, 0, 0);
                     getMessagesStorage().updateDialogsWithDeletedMessages(key, -key, arrayList, dialogIds);
                 });

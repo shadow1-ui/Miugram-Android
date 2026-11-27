@@ -22,7 +22,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 /** Encrypted, per-account local store for eligible text snapshots.
- * Not wired to Telegram updates or the chat UI yet; callers must establish policy evidence.
+ * Experimental server-update capture is gated off; chat UI and cleanup are not wired.
+ * Callers must establish and revalidate policy evidence.
  * All methods do disk/keystore work and must run off the main thread. */
 public final class MiugramTextArchive {
     private static final int MAX_RECORDS = 2000;
@@ -116,6 +117,36 @@ public final class MiugramTextArchive {
         entry.put("dialog", record.dialogId); entry.put("sender", record.senderId);
         entry.put("id", record.messageId); entry.put("date", record.date); entry.put("text", record.text);
         records.put(entry);
+        write(account, atomic, records, !existed);
+    }
+
+    /** Write a batch in one encrypted transaction; the caller must revalidate live policy. */
+    public static synchronized void putCandidates(long account, ArrayList<MiugramArchiveCandidate.Candidate> candidates) throws Exception {
+        alias(account);
+        if (candidates == null || candidates.isEmpty()) return;
+        AtomicFile atomic = file(account);
+        boolean existed = fileExists(atomic);
+        JSONArray records = read(account, atomic);
+        for (MiugramArchiveCandidate.Candidate candidate : candidates) {
+            if (candidate == null || !MiugramArchivePolicy.mayRetainText(candidate.evidence)) {
+                throw new SecurityException("Ineligible archive snapshot");
+            }
+            Record record = candidate.record;
+            if (record == null || record.dialogId == 0 || record.messageId <= 0 || record.date <= 0
+                    || record.text == null || record.text.isEmpty()
+                    || record.text.getBytes(StandardCharsets.UTF_8).length > MAX_TEXT_BYTES) {
+                throw new IllegalArgumentException("Invalid text snapshot");
+            }
+            for (int i = records.length() - 1; i >= 0; --i) {
+                JSONObject old = records.getJSONObject(i);
+                if (old.getLong("dialog") == record.dialogId && old.getInt("id") == record.messageId) records.remove(i);
+            }
+            if (records.length() >= MAX_RECORDS) throw new IOException("Archive is full");
+            JSONObject entry = new JSONObject();
+            entry.put("dialog", record.dialogId); entry.put("sender", record.senderId);
+            entry.put("id", record.messageId); entry.put("date", record.date); entry.put("text", record.text);
+            records.put(entry);
+        }
         write(account, atomic, records, !existed);
     }
 

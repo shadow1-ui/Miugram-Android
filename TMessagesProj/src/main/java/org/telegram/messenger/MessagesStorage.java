@@ -14695,6 +14695,63 @@ public class MessagesStorage extends BaseController {
         AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.quickRepliesUpdated));
     }
 
+    /** Capture cached snapshots before an actual server deletion, on storageQueue.
+     * Experimental and disabled: chat display, policy-change cleanup and lifecycle handling
+     * must be completed before making this reachable through settings. */
+    void captureMiugramServerDeletions(long dialogId, ArrayList<Integer> ids) {
+        final long accountId = getUserConfig().getClientUserId();
+        if (accountId <= 0 || ids == null || ids.isEmpty()
+                || !getMessagesController().isMiugramArchiveCaptureEnabled()) return;
+        SQLiteCursor cursor = null;
+        final ArrayList<TLRPC.Message> snapshots = new ArrayList<>();
+        try {
+            String values = TextUtils.join(",", ids);
+            String query = dialogId != 0
+                    ? String.format(Locale.US, "SELECT uid, data FROM messages_v2 WHERE mid IN(%s) AND uid = %d LIMIT 2000", values, dialogId)
+                    : String.format(Locale.US, "SELECT uid, data FROM messages_v2 WHERE mid IN(%s) AND is_channel = 0 LIMIT 2000", values);
+            cursor = database.queryFinalized(query);
+            while (cursor.next()) {
+                long actualDialogId = cursor.longValue(0);
+                NativeByteBuffer data = cursor.byteBufferValue(1);
+                if (data == null) continue;
+                try {
+                    TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                    if (message != null) {
+                        message.dialog_id = actualDialogId;
+                        snapshots.add(message);
+                    }
+                } finally {
+                    data.reuse();
+                }
+            }
+        } catch (Exception e) {
+            checkSQLException(e);
+            return;
+        } finally {
+            if (cursor != null) cursor.dispose();
+        }
+        if (snapshots.isEmpty()) return;
+        AndroidUtilities.runOnUIThread(() -> {
+            final MessagesController controller = getMessagesController();
+            if (getUserConfig().getClientUserId() != accountId || !controller.isMiugramArchiveCaptureEnabled()) return;
+            final ArrayList<MiugramArchiveCandidate.Candidate> candidates = new ArrayList<>();
+            for (TLRPC.Message message : snapshots) {
+                MiugramArchiveCandidate.Candidate candidate = MiugramArchiveCandidate.fromServerDeletion(
+                        controller, accountId, message.dialog_id, message, true, true);
+                if (candidate != null) candidates.add(candidate);
+            }
+            if (candidates.isEmpty()) return;
+            Utilities.globalQueue.postRunnable(() -> {
+                if (getUserConfig().getClientUserId() != accountId || !controller.isMiugramArchiveCaptureEnabled()) return;
+                try {
+                    MiugramTextArchive.putCandidates(accountId, candidates);
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+            });
+        });
+    }
+
     private ArrayList<Long> markMessagesAsDeletedInternal(long dialogId, ArrayList<Integer> messages, boolean deleteFiles, int mode, int threadMessageId) {
         SQLiteCursor cursor = null;
         SQLitePreparedStatement state = null;
