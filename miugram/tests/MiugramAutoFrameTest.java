@@ -11,6 +11,7 @@ public class MiugramAutoFrameTest {
         float[] portrait = MiugramAutoFrame.choose(image, 32, 32, 1000, 1800);
         check(portrait[0] == 0f && portrait[2] == 1f);
         check(portrait[1] >= 0f && portrait[3] <= 1f && portrait[3] > portrait[1]);
+        check(Math.abs((portrait[1] + portrait[3]) / 2f - .5f) < 1e-6);
         float[] wide = MiugramAutoFrame.choose(image, 32, 32, 3600, 1000);
         check(wide[0] >= 0f && wide[2] <= 1f && wide[2] > wide[0]);
         check(wide[1] == 0f && wide[3] == 1f);
