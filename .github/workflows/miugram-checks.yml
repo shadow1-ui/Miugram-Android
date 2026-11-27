@@ -33,3 +33,5 @@ jobs:
           java -cp /tmp/miugram-test MiugramArchivePolicyTest
           javac -d /tmp/miugram-test TMessagesProj/src/main/java/org/telegram/messenger/MiugramArchiveCrypto.java miugram/tests/MiugramArchiveCryptoTest.java
           java -cp /tmp/miugram-test MiugramArchiveCryptoTest
+          javac -d /tmp/miugram-test TMessagesProj/src/main/java/org/telegram/messenger/MiugramImageBounds.java miugram/tests/MiugramImageBoundsTest.java
+          java -cp /tmp/miugram-test MiugramImageBoundsTest

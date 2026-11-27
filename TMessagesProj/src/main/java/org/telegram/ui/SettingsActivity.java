@@ -78,6 +78,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MiugramProfileBackground;
+import org.telegram.messenger.MiugramImageBounds;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
@@ -1958,10 +1959,14 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 showMiugramProfileBackgroundResult(false);
                 return;
             }
-            // PhotoCropActivity owns its source image; copy before it is destroyed.
+            // The crop owns its source bitmap. Make a bounded independent copy
+            // before that screen is destroyed, to avoid retaining huge originals.
             final Bitmap copy;
             try {
-                copy = bitmap.copy(Bitmap.Config.ARGB_8888, false);
+                int[] size = MiugramImageBounds.fit(bitmap.getWidth(), bitmap.getHeight(), 1600);
+                Bitmap scaled = (size[0] != bitmap.getWidth() || size[1] != bitmap.getHeight())
+                        ? Bitmap.createScaledBitmap(bitmap, size[0], size[1], true) : bitmap;
+                copy = scaled == bitmap ? bitmap.copy(Bitmap.Config.ARGB_8888, false) : scaled;
             } catch (Throwable e) {
                 FileLog.e(e);
                 showMiugramProfileBackgroundResult(false);
