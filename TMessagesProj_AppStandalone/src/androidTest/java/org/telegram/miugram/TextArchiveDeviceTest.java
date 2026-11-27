@@ -44,6 +44,9 @@ public final class TextArchiveDeviceTest {
             assertEquals(1, rows.size());
             assertEquals("updated secret", rows.get(0).text);
             assertTrue(MiugramTextArchive.forDialog(other, 100).isEmpty());
+            MiugramTextArchive.removeDialog(account, 101);
+            assertTrue(MiugramTextArchive.forDialog(account, 101).isEmpty());
+            assertEquals("updated secret", MiugramTextArchive.forDialog(account, 100).get(0).text);
             File stored = new File(ApplicationLoader.applicationContext.getNoBackupFilesDir(),
                     "miugram-text-archive-" + account + ".bin");
             byte[] encrypted = Files.readAllBytes(stored.toPath());

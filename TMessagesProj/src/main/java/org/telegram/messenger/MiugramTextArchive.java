@@ -116,10 +116,14 @@ public final class MiugramTextArchive {
         entry.put("dialog", record.dialogId); entry.put("sender", record.senderId);
         entry.put("id", record.messageId); entry.put("date", record.date); entry.put("text", record.text);
         records.put(entry);
+        write(account, atomic, records, !existed);
+    }
+
+    private static void write(long account, AtomicFile atomic, JSONArray records, boolean createKey) throws Exception {
         byte[] plain = records.toString().getBytes(StandardCharsets.UTF_8);
         byte[] sealed;
         try {
-            sealed = MiugramArchiveCrypto.seal(key(account, !existed), account, plain);
+            sealed = MiugramArchiveCrypto.seal(key(account, createKey), account, plain);
         } finally {
             java.util.Arrays.fill(plain, (byte) 0);
         }
@@ -130,6 +134,25 @@ public final class MiugramTextArchive {
             if (out != null) atomic.failWrite(out);
             throw e;
         }
+    }
+
+    /** Remove a single chat without modifying other chats. No data is overwritten on read failure. */
+    public static synchronized void removeDialog(long account, long dialogId) throws Exception {
+        alias(account);
+        if (dialogId == 0) throw new IllegalArgumentException("Invalid dialog");
+        AtomicFile atomic = file(account);
+        if (!fileExists(atomic)) return;
+        JSONArray records = read(account, atomic);
+        boolean changed = false;
+        for (int i = records.length() - 1; i >= 0; --i) {
+            if (records.getJSONObject(i).getLong("dialog") == dialogId) {
+                records.remove(i);
+                changed = true;
+            }
+        }
+        if (!changed) return;
+        if (records.length() == 0) clear(account);
+        else write(account, atomic, records, false);
     }
 
     public static synchronized ArrayList<Record> forDialog(long account, long dialogId) throws Exception {
