@@ -44,6 +44,10 @@ public final class TextArchiveDeviceTest {
             assertEquals(1, rows.size());
             assertEquals("updated secret", rows.get(0).text);
             assertTrue(MiugramTextArchive.forDialog(other, 100).isEmpty());
+            MiugramTextArchive.removeMessage(account, 100, 3);
+            assertTrue(MiugramTextArchive.forDialog(account, 100).isEmpty());
+            assertEquals(1, MiugramTextArchive.forDialog(account, 101).size());
+            MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "updated secret"), evidence);
             MiugramTextArchive.removeDialog(account, 101);
             assertTrue(MiugramTextArchive.forDialog(account, 101).isEmpty());
             assertEquals("updated secret", MiugramTextArchive.forDialog(account, 100).get(0).text);

@@ -138,6 +138,16 @@ public final class MiugramTextArchive {
 
     /** Remove a single chat without modifying other chats. No data is overwritten on read failure. */
     public static synchronized void removeDialog(long account, long dialogId) throws Exception {
+        removeMatching(account, dialogId, 0);
+    }
+
+    /** Remove one preserved message, for an explicit local deletion. */
+    public static synchronized void removeMessage(long account, long dialogId, int messageId) throws Exception {
+        if (messageId <= 0) throw new IllegalArgumentException("Invalid message");
+        removeMatching(account, dialogId, messageId);
+    }
+
+    private static void removeMatching(long account, long dialogId, int messageId) throws Exception {
         alias(account);
         if (dialogId == 0) throw new IllegalArgumentException("Invalid dialog");
         AtomicFile atomic = file(account);
@@ -145,7 +155,8 @@ public final class MiugramTextArchive {
         JSONArray records = read(account, atomic);
         boolean changed = false;
         for (int i = records.length() - 1; i >= 0; --i) {
-            if (records.getJSONObject(i).getLong("dialog") == dialogId) {
+            JSONObject entry = records.getJSONObject(i);
+            if (entry.getLong("dialog") == dialogId && (messageId == 0 || entry.getInt("id") == messageId)) {
                 records.remove(i);
                 changed = true;
             }
