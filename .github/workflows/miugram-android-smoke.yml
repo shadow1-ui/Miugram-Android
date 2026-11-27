@@ -41,7 +41,7 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon --max-workers=2 \
             '-Dorg.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' \
-            :TMessagesProj_AppStandalone:assembleAfatDebug --stacktrace
+            :TMessagesProj_AppStandalone:assembleAfatDebug :TMessagesProj_AppStandalone:assembleAfatDebugAndroidTest --stacktrace
       - name: Start fresh emulator and launch Miugram
         shell: bash
         run: |
@@ -73,5 +73,12 @@ jobs:
           if "$adb" logcat -d --pid="$pid" -s AndroidRuntime:E | grep -q 'FATAL EXCEPTION'; then
             echo 'Application encountered a fatal runtime exception' >&2; exit 1
           fi
-          echo 'Startup smoke test passed. Login, notifications, feature behavior and release packaging remain unverified.'
+          test_apk=$(find TMessagesProj_AppStandalone/build/outputs/apk/androidTest/afat/debug -name '*.apk' -print -quit)
+          test -n "$test_apk"
+          "$adb" install -r "$test_apk"
+          "$adb" shell am instrument -w -e class org.telegram.miugram.TextArchiveDeviceTest \
+            "$package.test/androidx.test.runner.AndroidJUnitRunner" | tee "$RUNNER_TEMP/archive-test.log"
+          grep -Eq '^OK \([0-9]+ tests?\)' "$RUNNER_TEMP/archive-test.log"
+          if grep -Eq 'FAILURES!!!|INSTRUMENTATION_FAILED|Process crashed' "$RUNNER_TEMP/archive-test.log"; then exit 1; fi
+          echo 'Startup and synthetic archive test passed. Login, deletion capture, chat rendering and release packaging remain unverified.'
       # No artifact or public release: this checks only startup on an empty emulator.

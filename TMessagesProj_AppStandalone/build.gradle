@@ -25,6 +25,9 @@ configurations.all {
 
 dependencies {
     implementation project(':TMessagesProj')
+    androidTestImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
     implementation 'androidx.fragment:fragment:1.8.9'
     implementation 'androidx.core:core:1.16.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
@@ -36,6 +39,7 @@ android {
     buildToolsVersion '36.0.0'
 
     defaultConfig.applicationId = miugramApplicationId
+    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
     lintOptions {
