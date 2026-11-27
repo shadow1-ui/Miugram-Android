@@ -76,7 +76,7 @@ jobs:
           test_apk=$(find TMessagesProj_AppStandalone/build/outputs/apk/androidTest/afat/debug -name '*.apk' -print -quit)
           test -n "$test_apk"
           "$adb" install -r "$test_apk"
-          "$adb" shell am instrument -w -e class org.telegram.miugram.TextArchiveDeviceTest \
+          "$adb" shell am instrument -w -e class org.telegram.miugram.TextArchiveDeviceTest,org.telegram.miugram.ArchiveCandidateDeviceTest \
             "$package.test/androidx.test.runner.AndroidJUnitRunner" | tee "$RUNNER_TEMP/archive-test.log"
           grep -Eq '^OK \([0-9]+ tests?\)' "$RUNNER_TEMP/archive-test.log"
           if grep -Eq 'FAILURES!!!|INSTRUMENTATION_FAILED|Process crashed' "$RUNNER_TEMP/archive-test.log"; then exit 1; fi

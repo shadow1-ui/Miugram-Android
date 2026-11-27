@@ -20,31 +20,37 @@ public final class MiugramArchiveCandidate {
 
     public static Candidate fromServerDeletion(MessagesController controller,
             long selfId, long dialogId, TLRPC.Message message, boolean optedIn, boolean serverDeletion) {
-        if (controller == null || message == null || selfId <= 0 || dialogId == 0
-                || dialogId == selfId || DialogObject.isEncryptedDialog(dialogId)
-                || DialogObject.isFolderDialogId(dialogId)) return null;
-        if (MessageObject.getDialogId(message) != dialogId) return null;
-        TLRPC.Dialog dialog = controller.dialogs_dict.get(dialogId);
-        if (dialog == null) return null; // Unknown policy must fail closed.
+        if (controller == null || dialogId == 0) return null;
+        return fromKnownState(selfId, dialogId, message, controller.dialogs_dict.get(dialogId),
+                dialogId > 0 ? controller.getUserFull(dialogId) : null,
+                dialogId < 0 ? controller.getChat(-dialogId) : null,
+                dialogId < 0 ? controller.getChatFull(-dialogId) : null,
+                optedIn, serverDeletion);
+    }
+
+    /** The caller must supply current, authoritative peer objects for this same dialog. */
+    public static Candidate fromKnownState(long selfId, long dialogId, TLRPC.Message message,
+            TLRPC.Dialog dialog, TLRPC.UserFull userFull, TLRPC.Chat chat, TLRPC.ChatFull chatFull,
+            boolean optedIn, boolean serverDeletion) {
+        if (message == null || selfId <= 0 || dialogId == 0 || dialogId == selfId
+                || DialogObject.isEncryptedDialog(dialogId) || DialogObject.isFolderDialogId(dialogId)
+                || MessageObject.getDialogId(message) != dialogId || dialog == null || dialog.id != dialogId) return null;
 
         boolean policyKnown = false;
         boolean peerProtected = true;
         boolean dialogExpires = true;
         if (dialogId > 0) {
-            TLRPC.UserFull full = controller.getUserFull(dialogId);
-            if (full != null) {
+            if (userFull != null && userFull.id == dialogId) {
                 policyKnown = true;
-                peerProtected = full.noforwards_peer_enabled || full.noforwards_my_enabled;
-                dialogExpires = dialog.ttl_period != 0 || full.ttl_period != 0;
+                peerProtected = userFull.noforwards_peer_enabled || userFull.noforwards_my_enabled;
+                dialogExpires = dialog.ttl_period != 0 || userFull.ttl_period != 0;
             }
         } else {
-            TLRPC.Chat chat = controller.getChat(-dialogId);
-            TLRPC.ChatFull full = controller.getChatFull(-dialogId);
             // A migrated peer's protection needs its own verified state; omit it for now.
-            if (chat != null && full != null && chat.migrated_to == null) {
+            if (chat != null && chatFull != null && chat.id == -dialogId && chatFull.id == -dialogId && chat.migrated_to == null) {
                 policyKnown = true;
                 peerProtected = chat.noforwards;
-                dialogExpires = dialog.ttl_period != 0 || full.ttl_period != 0;
+                dialogExpires = dialog.ttl_period != 0 || chatFull.ttl_period != 0;
             }
         }
         MiugramArchivePolicy.Evidence evidence = new MiugramArchivePolicy.Evidence();
