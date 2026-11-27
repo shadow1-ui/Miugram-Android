@@ -166,7 +166,8 @@ public final class MiugramTextArchive {
         else write(account, atomic, records, false);
     }
 
-    public static synchronized ArrayList<Record> forDialog(long account, long dialogId) throws Exception {
+    public static synchronized ArrayList<Record> forDialog(long account, long dialogId, MiugramArchivePolicy.Evidence evidence) throws Exception {
+        if (!MiugramArchivePolicy.mayDisplay(evidence)) throw new SecurityException("Current chat policy does not permit archive display");
         alias(account);
         ArrayList<Record> result = new ArrayList<>();
         JSONArray records = read(account, file(account));

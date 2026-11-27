@@ -27,8 +27,8 @@ public final class TextArchiveDeviceTest {
         }
         MiugramTextArchive.clear(account);
         MiugramTextArchive.clear(other);
+        MiugramArchivePolicy.Evidence evidence = new MiugramArchivePolicy.Evidence();
         try {
-            MiugramArchivePolicy.Evidence evidence = new MiugramArchivePolicy.Evidence();
             MiugramTextArchive.Record first = new MiugramTextArchive.Record(100, 200, 3, 1700000000, "first secret");
             try {
                 MiugramTextArchive.put(account, first, evidence);
@@ -40,17 +40,23 @@ public final class TextArchiveDeviceTest {
             MiugramTextArchive.put(account, first, evidence);
             MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "updated secret"), evidence);
             MiugramTextArchive.put(account, new MiugramTextArchive.Record(101, 201, 4, 1700000001, "different chat"), evidence);
-            ArrayList<MiugramTextArchive.Record> rows = MiugramTextArchive.forDialog(account, 100);
+            ArrayList<MiugramTextArchive.Record> rows = MiugramTextArchive.forDialog(account, 100, evidence);
             assertEquals(1, rows.size());
             assertEquals("updated secret", rows.get(0).text);
-            assertTrue(MiugramTextArchive.forDialog(other, 100).isEmpty());
+            evidence.peerProtected = true;
+            try {
+                MiugramTextArchive.forDialog(account, 100, evidence);
+                fail("Protected chat must not expose archive");
+            } catch (SecurityException expected) { }
+            evidence.peerProtected = false;
+            assertTrue(MiugramTextArchive.forDialog(other, 100, evidence).isEmpty());
             MiugramTextArchive.removeMessage(account, 100, 3);
-            assertTrue(MiugramTextArchive.forDialog(account, 100).isEmpty());
-            assertEquals(1, MiugramTextArchive.forDialog(account, 101).size());
+            assertTrue(MiugramTextArchive.forDialog(account, 100, evidence).isEmpty());
+            assertEquals(1, MiugramTextArchive.forDialog(account, 101, evidence).size());
             MiugramTextArchive.put(account, new MiugramTextArchive.Record(100, 200, 3, 1700000000, "updated secret"), evidence);
             MiugramTextArchive.removeDialog(account, 101);
-            assertTrue(MiugramTextArchive.forDialog(account, 101).isEmpty());
-            assertEquals("updated secret", MiugramTextArchive.forDialog(account, 100).get(0).text);
+            assertTrue(MiugramTextArchive.forDialog(account, 101, evidence).isEmpty());
+            assertEquals("updated secret", MiugramTextArchive.forDialog(account, 100, evidence).get(0).text);
             File stored = new File(ApplicationLoader.applicationContext.getNoBackupFilesDir(),
                     "miugram-text-archive-" + account + ".bin");
             byte[] encrypted = Files.readAllBytes(stored.toPath());
@@ -58,13 +64,13 @@ public final class TextArchiveDeviceTest {
             encrypted[encrypted.length - 1] ^= 1;
             Files.write(stored.toPath(), encrypted);
             try {
-                MiugramTextArchive.forDialog(account, 100);
+                MiugramTextArchive.forDialog(account, 100, evidence);
                 fail("Tampered data was accepted");
             } catch (java.security.GeneralSecurityException expected) { }
         } finally {
             MiugramTextArchive.clear(account);
             MiugramTextArchive.clear(other);
         }
-        assertTrue(MiugramTextArchive.forDialog(account, 100).isEmpty());
+        assertTrue(MiugramTextArchive.forDialog(account, 100, evidence).isEmpty());
     }
 }

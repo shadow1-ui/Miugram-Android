@@ -20,6 +20,12 @@ public final class MiugramArchivePolicy {
                 evidence.ordinaryTextOnly);
     }
 
+    /** Recheck current chat policy before exposing archived data. */
+    public static boolean mayDisplay(Evidence evidence) {
+        return evidence != null && evidence.optedIn && evidence.ordinaryCloudChat
+                && evidence.peerPolicyKnown && !evidence.peerProtected && !evidence.hasExpiry;
+    }
+
     /** Caller must positively establish every safety property, not treat unknown as safe. */
     public static boolean mayRetainText(boolean optedIn, boolean serverDeletion,
             boolean incoming, boolean ordinaryCloudChat, boolean peerPolicyKnown,

@@ -7,6 +7,15 @@ public final class MiugramArchivePolicyTest {
                 || MiugramArchivePolicy.mayRetainText(new MiugramArchivePolicy.Evidence())) {
             throw new AssertionError("Missing evidence must deny retention");
         }
+        MiugramArchivePolicy.Evidence display = new MiugramArchivePolicy.Evidence();
+        if (MiugramArchivePolicy.mayDisplay(display)) throw new AssertionError("Unverified display policy");
+        display.optedIn = display.ordinaryCloudChat = display.peerPolicyKnown = true;
+        display.peerProtected = display.hasExpiry = false;
+        if (!MiugramArchivePolicy.mayDisplay(display)) throw new AssertionError("Safe display rejected");
+        display.peerProtected = true;
+        if (MiugramArchivePolicy.mayDisplay(display)) throw new AssertionError("Protected chat displayed");
+        display.peerProtected = false; display.hasExpiry = true;
+        if (MiugramArchivePolicy.mayDisplay(display)) throw new AssertionError("Timed chat displayed");
         int permitted = 0;
         for (int bits = 0; bits < (1 << 9); bits++) {
             boolean[] b = new boolean[9];
