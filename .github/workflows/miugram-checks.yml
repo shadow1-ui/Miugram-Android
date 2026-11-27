@@ -27,3 +27,5 @@ jobs:
           mkdir -p /tmp/miugram-test
           javac -d /tmp/miugram-test TMessagesProj/src/main/java/org/telegram/messenger/MiugramGhostPolicy.java miugram/tests/MiugramGhostPolicyTest.java
           java -cp /tmp/miugram-test MiugramGhostPolicyTest
+          javac -d /tmp/miugram-test TMessagesProj/src/main/java/org/telegram/messenger/MiugramAutoFrame.java miugram/tests/MiugramAutoFrameTest.java
+          java -cp /tmp/miugram-test MiugramAutoFrameTest

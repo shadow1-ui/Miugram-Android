@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ImageLoader;
+import org.telegram.messenger.MiugramAutoFrame;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
@@ -250,6 +251,27 @@ public class PhotoCropActivity extends BaseFragment {
                     rectX = bitmapX;
                     rectSizeX = bitmapWidth;
                     rectSizeY = bitmapHeight;
+                    if (getArguments().getBoolean("miugramProfileBackground", false)) {
+                        Bitmap sample = null;
+                        try {
+                            sample = Bitmap.createScaledBitmap(imageToCrop, 32, 32, true);
+                            int[] pixels = new int[32 * 32];
+                            sample.getPixels(pixels, 0, 32, 0, 0, 32, 32);
+                            float[] frame = MiugramAutoFrame.choose(pixels, 32, 32, imageToCrop.getWidth(), imageToCrop.getHeight());
+                            float frameWidth = Math.max(Math.min(160, bitmapWidth), (frame[2] - frame[0]) * bitmapWidth);
+                            float frameHeight = Math.max(Math.min(160, bitmapHeight), (frame[3] - frame[1]) * bitmapHeight);
+                            float centerX = (frame[0] + frame[2]) * bitmapWidth / 2f;
+                            float centerY = (frame[1] + frame[3]) * bitmapHeight / 2f;
+                            rectSizeX = Math.min(bitmapWidth, frameWidth);
+                            rectSizeY = Math.min(bitmapHeight, frameHeight);
+                            rectX = bitmapX + Math.max(0, Math.min(bitmapWidth - rectSizeX, centerX - rectSizeX / 2f));
+                            rectY = bitmapY + Math.max(0, Math.min(bitmapHeight - rectSizeY, centerY - rectSizeY / 2f));
+                        } catch (Throwable e) {
+                            FileLog.e(e); // Full-image crop is a safe fallback.
+                        } finally {
+                            if (sample != null && sample != imageToCrop && !sample.isRecycled()) sample.recycle();
+                        }
+                    }
                 } else {
                     if (bitmapWidth > bitmapHeight) {
                         rectY = bitmapY;

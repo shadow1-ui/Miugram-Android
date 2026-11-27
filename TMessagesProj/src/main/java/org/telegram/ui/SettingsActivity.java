@@ -1884,6 +1884,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         Bundle args = new Bundle();
         args.putParcelable("photoUri", data.getData());
         args.putBoolean("freeform", true);
+        args.putBoolean("miugramProfileBackground", true);
         PhotoCropActivity crop = new PhotoCropActivity(args);
         final long account = getUserConfig().getClientUserId();
         crop.setDelegate(bitmap -> {
