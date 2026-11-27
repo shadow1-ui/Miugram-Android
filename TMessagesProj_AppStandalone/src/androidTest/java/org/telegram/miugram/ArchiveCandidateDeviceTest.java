@@ -75,4 +75,49 @@ public final class ArchiveCandidateDeviceTest {
         } finally { MiugramTextArchive.clear(account); }
     }
 
+    @Test public void archiveRetainsNewestWithinCountAndEscapedByteLimits() throws Exception {
+        final long account = 8500000000000000004L;
+        if (ApplicationLoader.applicationContext == null) {
+            ApplicationLoader.applicationContext = InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
+        }
+        TLRPC.TL_dialog dialog = new TLRPC.TL_dialog(); dialog.id = -123;
+        TLRPC.TL_chat chat = new TLRPC.TL_chat(); chat.id = 123;
+        TLRPC.TL_chatFull full = new TLRPC.TL_chatFull(); full.id = 123;
+        TLRPC.TL_peerUser sender = new TLRPC.TL_peerUser(); sender.user_id = 456;
+        TLRPC.TL_message msg = new TLRPC.TL_message();
+        msg.date = 1700000000; msg.dialog_id = -123; msg.from_id = sender;
+        ArrayList<MiugramArchiveCandidate.Candidate> batch = new ArrayList<>();
+        MiugramArchivePolicy.Evidence evidence = null;
+        MiugramTextArchive.clear(account);
+        try {
+            msg.message = "short";
+            for (int id = 1; id <= 2010; ++id) {
+                msg.id = id;
+                MiugramArchiveCandidate.Candidate c = MiugramArchiveCandidate.fromKnownState(7, -123, msg, dialog, null, chat, full, true, true);
+                assertNotNull(c); batch.add(c); evidence = c.evidence;
+            }
+            MiugramTextArchive.putCandidates(account, batch);
+            ArrayList<MiugramTextArchive.Record> rows = MiugramTextArchive.forDialog(account, -123, evidence);
+            assertEquals(2000, rows.size());
+            assertEquals(11, rows.get(0).messageId);
+            assertEquals(2010, rows.get(rows.size() - 1).messageId);
+
+            MiugramTextArchive.clear(account); batch.clear();
+            // Quotes double in JSON and must be counted as serialized UTF-8 bytes.
+            char[] characters = new char[8000]; java.util.Arrays.fill(characters, '"');
+            msg.message = new String(characters);
+            for (int id = 1; id <= 300; ++id) {
+                msg.id = id;
+                MiugramArchiveCandidate.Candidate c = MiugramArchiveCandidate.fromKnownState(7, -123, msg, dialog, null, chat, full, true, true);
+                assertNotNull(c); batch.add(c);
+            }
+            MiugramTextArchive.putCandidates(account, batch);
+            rows = MiugramTextArchive.forDialog(account, -123, evidence);
+            assertTrue(rows.size() > 0 && rows.size() < 300);
+            assertTrue(rows.get(0).messageId > 1);
+            assertEquals(300, rows.get(rows.size() - 1).messageId);
+            assertEquals(msg.message, rows.get(rows.size() - 1).text);
+        } finally { MiugramTextArchive.clear(account); }
+    }
+
 }

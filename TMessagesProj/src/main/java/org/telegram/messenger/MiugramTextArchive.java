@@ -112,12 +112,11 @@ public final class MiugramTextArchive {
             JSONObject old = records.getJSONObject(i);
             if (old.getLong("dialog") == record.dialogId && old.getInt("id") == record.messageId) records.remove(i);
         }
-        if (records.length() >= MAX_RECORDS) throw new IOException("Archive is full");
         JSONObject entry = new JSONObject();
         entry.put("dialog", record.dialogId); entry.put("sender", record.senderId);
         entry.put("id", record.messageId); entry.put("date", record.date); entry.put("text", record.text);
         records.put(entry);
-        write(account, atomic, records, !existed);
+        write(account, atomic, newestWithinLimits(records), !existed);
     }
 
     /** Write a batch in one encrypted transaction; the caller must revalidate live policy. */
@@ -141,13 +140,32 @@ public final class MiugramTextArchive {
                 JSONObject old = records.getJSONObject(i);
                 if (old.getLong("dialog") == record.dialogId && old.getInt("id") == record.messageId) records.remove(i);
             }
-            if (records.length() >= MAX_RECORDS) throw new IOException("Archive is full");
             JSONObject entry = new JSONObject();
             entry.put("dialog", record.dialogId); entry.put("sender", record.senderId);
             entry.put("id", record.messageId); entry.put("date", record.date); entry.put("text", record.text);
             records.put(entry);
         }
-        write(account, atomic, records, !existed);
+        write(account, atomic, newestWithinLimits(records), !existed);
+    }
+
+    /** Keep the most recently stored entries when either archive bound is reached.
+     * Account for JSON escaping and UTF-8 bytes, not Java character count. */
+    private static JSONArray newestWithinLimits(JSONArray records) throws JSONException {
+        int start = records.length();
+        long size = 2; // [ and ]
+        int count = 0;
+        while (start > 0 && count < MAX_RECORDS) {
+            JSONObject entry = records.getJSONObject(start - 1);
+            int entryBytes = entry.toString().getBytes(StandardCharsets.UTF_8).length;
+            long nextSize = size + entryBytes + (count == 0 ? 0 : 1); // comma
+            if (nextSize > MiugramArchiveCrypto.MAX_PLAINTEXT_BYTES) break;
+            size = nextSize;
+            --start;
+            ++count;
+        }
+        JSONArray bounded = new JSONArray();
+        for (int i = start; i < records.length(); ++i) bounded.put(records.getJSONObject(i));
+        return bounded;
     }
 
     private static void write(long account, AtomicFile atomic, JSONArray records, boolean createKey) throws Exception {
