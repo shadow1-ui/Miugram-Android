@@ -16,7 +16,7 @@ An initial Miugram settings entry exposes account ID and current DC when availab
 
 A built-in graphite and muted-pink Android theme is included for first launch, but has not been visually checked in the app; further cohesive design and fast, consistent animations remain; a dedicated Miugram settings area; account ID and real current DC; user links with privacy limitations; configurable message status indicators; local profile background with cropping; and selectable app icons where supported. Custom interface icon design is deferred pending approval.
 
-The requested option to retain locally received messages deleted by others must be clearly marked, safely stored and deletable. It cannot recover messages never received and must not bypass self-destructing or protected content.
+The requested option to retain locally received messages deleted by others is **not implemented**. An app-private encrypted text-storage foundation and fail-closed policy exist, but Telegram deletion capture, chat display, settings and logout cleanup are not connected. Unit tests cover the encryption codec and policy; an Android Keystore emulator test has been scheduled, not yet verified. Server deletion updates do not reliably identify who initiated a deletion. Only already-received content could ever be retained; self-destructing and protected content must be excluded.
 
 ## Experimental ghost mode (Android, not yet tested)
 
@@ -38,7 +38,7 @@ Miugram settings offers classic and rounded checkmark styles. The selection is s
 
 ## Experimental local profile background (Android)
 
-Miugram settings can choose an image through the system picker, crop it manually or accept the initial frame, and remove it. The cropped image is stored in the app-private, non-backed-up directory per account, never uploaded by this feature. The own-profile header uses a center crop and dark overlay. The settings also offer a profile preview after applying the crop. Its initial editable crop uses a local visual-detail heuristic with a center-biased fallback, not face or subject recognition. The new automatic-frame code has unit tests but has not yet been compiled in Android CI or checked on a device; layout, readability, permissions, cancellation and low-memory behavior still require testing.
+Miugram settings can choose an image through the system picker, crop it manually or accept the initial frame, and remove it. The cropped image is stored in the app-private, non-backed-up directory per account, never uploaded by this feature. The own-profile header uses a center crop and dark overlay. An illustrative confirmation preview appears before saving, and the settings also offer a profile preview after applying the crop. Its initial editable crop uses a local visual-detail heuristic with a center-biased fallback, not face or subject recognition. The new automatic-frame code has unit tests; the frame and before-save preview have not yet been compiled in Android CI or checked on a device; layout, readability, permissions, cancellation and low-memory behavior still require testing.
 
 The debug CI workflow reads the Telegram API ID and hash from GitHub Actions secrets. It still does not publish a release or prove that login works. The hash is embedded in the resulting application and is extractable from it.
 
