@@ -22,7 +22,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 /** Encrypted, per-account local store for eligible text snapshots.
- * Experimental server-update capture is gated off; chat UI and cleanup are not wired.
+ * Experimental server-update capture is gated off; chat UI and user-controlled cleanup are not wired.
  * Callers must establish and revalidate policy evidence.
  * All methods do disk/keystore work and must run off the main thread. */
 public final class MiugramTextArchive {

@@ -1536,8 +1536,12 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     // Disabled until preservation can be displayed and cleared safely in the UI.
+    private final java.util.concurrent.atomic.AtomicLong miugramArchiveGeneration = new java.util.concurrent.atomic.AtomicLong();
     boolean isMiugramArchiveCaptureEnabled() {
         return mainPreferences.getBoolean("miugram_archive_capture_experimental", false);
+    }
+    long miugramArchiveGeneration() {
+        return miugramArchiveGeneration.get();
     }
 
     public static SharedPreferences getNotificationsSettings(int account) {
@@ -16200,6 +16204,19 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void performLogout(int type) {
+        // Invalidate queued snapshots before clearing account state. Archive I/O shares
+        // the same serial queue as capture writes, so old writes precede the clear.
+        final long miugramArchiveAccount = getUserConfig().getClientUserId();
+        miugramArchiveGeneration.incrementAndGet();
+        if (miugramArchiveAccount > 0) {
+            Utilities.globalQueue.postRunnable(() -> {
+                try {
+                    MiugramTextArchive.clear(miugramArchiveAccount);
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+            });
+        }
         if (type == 1) {
             GramWalletStorage.wipeForUser(ApplicationLoader.applicationContext, currentAccount, getUserConfig().getClientUserId());
             unregistedPush();

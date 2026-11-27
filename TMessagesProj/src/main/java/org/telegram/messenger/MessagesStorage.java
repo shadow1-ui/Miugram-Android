@@ -14700,8 +14700,10 @@ public class MessagesStorage extends BaseController {
      * must be completed before making this reachable through settings. */
     void captureMiugramServerDeletions(long dialogId, ArrayList<Integer> ids) {
         final long accountId = getUserConfig().getClientUserId();
+        final MessagesController controller = getMessagesController();
+        final long generation = controller.miugramArchiveGeneration();
         if (accountId <= 0 || ids == null || ids.isEmpty()
-                || !getMessagesController().isMiugramArchiveCaptureEnabled()) return;
+                || !controller.isMiugramArchiveCaptureEnabled()) return;
         SQLiteCursor cursor = null;
         final ArrayList<TLRPC.Message> snapshots = new ArrayList<>();
         try {
@@ -14732,8 +14734,8 @@ public class MessagesStorage extends BaseController {
         }
         if (snapshots.isEmpty()) return;
         AndroidUtilities.runOnUIThread(() -> {
-            final MessagesController controller = getMessagesController();
-            if (getUserConfig().getClientUserId() != accountId || !controller.isMiugramArchiveCaptureEnabled()) return;
+            if (getUserConfig().getClientUserId() != accountId || controller.miugramArchiveGeneration() != generation
+                    || !controller.isMiugramArchiveCaptureEnabled()) return;
             final ArrayList<MiugramArchiveCandidate.Candidate> candidates = new ArrayList<>();
             for (TLRPC.Message message : snapshots) {
                 MiugramArchiveCandidate.Candidate candidate = MiugramArchiveCandidate.fromServerDeletion(
@@ -14742,7 +14744,8 @@ public class MessagesStorage extends BaseController {
             }
             if (candidates.isEmpty()) return;
             Utilities.globalQueue.postRunnable(() -> {
-                if (getUserConfig().getClientUserId() != accountId || !controller.isMiugramArchiveCaptureEnabled()) return;
+                if (getUserConfig().getClientUserId() != accountId || controller.miugramArchiveGeneration() != generation
+                        || !controller.isMiugramArchiveCaptureEnabled()) return;
                 try {
                     MiugramTextArchive.putCandidates(accountId, candidates);
                 } catch (Exception e) {
